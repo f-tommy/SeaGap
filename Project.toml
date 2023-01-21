@@ -1,0 +1,13 @@
+name = "SeaGap"
+uuid = "d5582fe7-ad79-4b28-9e30-e97b255d16f2"
+authors = ["Fumiaki Tomita <39943988+f-tommy@users.noreply.github.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

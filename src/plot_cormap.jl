@@ -1,0 +1,54 @@
+#using Dates
+#using Statistics
+#using DelimitedFiles
+#using Plots
+# Usage: plot_cormap()
+# Usage: plot_cormap(type="all",NPB=41,as=5,fno="cormap_all.pdf")
+
+export plot_cormap
+function plot_cormap(;txt=false::Bool,all=false::Bool,fn="sample.out"::String,fno="cormap.pdf"::String,fno0="correlation.out"::String,as=10::Int64,pfs=8::Int64,plot_size=(600,600),show=false::Bool,lmargin=0.5,tmargin=0.5,bmargin=0.5,rmargin=4.0)
+  println(stderr," === Correlation for pos_array_mcmcpvg samples ===")
+  time1 = now()
+  # --- Read data
+  println(stderr," --- Read files")
+  dat0, list0 = DelimitedFiles.readdlm(fn, header=true)
+  if all == false
+    dat = dat0[1:end,1:6]
+    list = list0[1:6]
+  else
+    dat = copy(dat0)
+    list = list0[1:end]
+  end
+  # --- Correlation
+  println(stderr," --- Correlation")
+  cdat = cor(dat)
+  # --- Plot
+  n,m = size(cdat)
+  plt = heatmap(cdat,aspect_ratio=1,xtickfontsize=as,ytickfontsize=as,framestyle=:box,c=cgrad(:bwr),clims=(-1,1),xticks=(1:m,list), xrot=90, yticks=(1:m,list), yflip=true,size=plot_size,left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin))
+  if all == false
+    annotate!(plt,[(j, i, text(round(cdat[i,j],digits=2), pfs,"Computer Modern",:black)) for i in 1:n for j in 1:m])
+  end
+  # --- plot
+  if show == false
+    savefig(plt,fno)
+  else
+    gui(plt)
+  end
+  # --- Output
+  if txt == true
+    println(stderr," --- Output")
+    open(fno0,"w") do out
+      print(out,"Name: ")
+      for i in 1:m
+        print(out,list[i]," ")
+      end
+      println(out,"")
+      Base.print_array(out,hcat(list,cdat))
+      println(out,"")
+    end
+  end
+  # --- Close process
+  time2 = now()
+  println(stderr," Start time:",time1)
+  println(stderr," Finish time:",time2)
+end
