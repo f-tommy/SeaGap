@@ -1,4 +1,4 @@
-push!(LOAD_PATH,"../src/") 
+#push!(LOAD_PATH,"../src/") 
 using SeaGap
 using Documenter
 
@@ -41,6 +41,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/f-tommy/SeaGap.jl",
-    devbranch="main",
+    repo="github.com/f-tommy/SeaGap.jl.git",
+#    devbranch="main",
 )
