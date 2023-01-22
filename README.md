@@ -1,7 +1,8 @@
 # SeaGap
 
-{: align="center"}
-<img src="https://user-images.githubusercontent.com/39943988/213900070-0ff33731-443c-4666-b940-e2c100b433de.png" width="200">
+<p align="center">
+　<img src="https://user-images.githubusercontent.com/39943988/213900070-0ff33731-443c-4666-b940-e2c100b433de.png" width="200">
+</p>
 
 Welcome to SeaGap!
 
