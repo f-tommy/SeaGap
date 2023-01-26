@@ -8,6 +8,20 @@
 # Usage: forward_test(38, 3.0, [1000,1000,-3000],txtout=false)
 
 export forward_test
+"""
+    forward_test(lat,XDUCER_DEPTH,pos; txtout,fn,fno)                                                                 
+Forward calculation for trave-times (See Tutorials in the online manual).
+
+* `lat`: Site latitude
+* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `pos`: A transponder position (3 components vector)
+* `txtout`: if `txtout=true`, calculation results are written in `fno`
+* `fn`: Input sound speed structure file
+* `fno`: Output text file
+
+# Example
+    forward_test(38, 3.0, [1000,1000,-3000],txtout=false)
+"""
 function forward_test(lat, XDUCER_DEPTH, pos::Vector{}; txtout=false::Bool,fn="ss_prof.zv"::String,fno="synthetic.txt"::String)
 # --- Set transponder position
   px = pos[1]; py = pos[2]; pz = pos[3]

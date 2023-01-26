@@ -1,5 +1,27 @@
 # === Make temporal points for bspline interval
 export mktbasis, tbspline3, retrieveb
+
+"""
+    mktbasis(NPB,t1,t2,NN)
+
+Make temporal B-spline bases for modeling NTD.
+`NPB` number of B-spline bases are deployed with a temporally-uniform interval.
+
+Arguments:
+* `NPB`: Number of B-spline bases
+* `t1`: Time when an acoustic signal transmitting [sec] (vector)
+* `t2`: Time when an acoustic signal recieving [sec] (vector)
+* `NN`: Number of shots (norm of `t1` and `t2`)
+
+Output:
+* `smin`: Minimum values among `t1` and `t2`
+* `smax`: Maximum values among `t1` and `t2`
+* `ds`: Temporal interval of B-spline bases
+* `tb`: Time at nodes that B-spine bases are deployed
+
+# Example
+    smin, smax, ds, tb = mktbasis(NPB,t1,t2,num)
+"""
 function mktbasis(NPB::Int64,t1,t2,NN::Int64)
   if NPB < 1
     error("mktbasis: number of B-spline basis must be integer and over 1")
@@ -21,6 +43,21 @@ function mktbasis(NPB::Int64,t1,t2,NN::Int64)
 end 
 
 # === Temporal B-spline function
+"""
+    tbspline3(t,ds,tb,b,NPB)
+
+Calculate value at `t` when providing coefficients `b` to temporal B-spline bases formed by `tb`, `ds`, and `NPB`.
+                                                                                
+Arguments:
+* `t`: Time [sec]
+* `ds`: Temporal interval of B-spline bases
+* `tb`: Time at nodes that B-spine bases are deployed (vector)
+* `b`:  Coeffcients for B-spline bases (vector)
+* `NPB`: Number of B-spline bases
+
+# Example
+    tbs = tbspline3(t,ds,tb,b,NPB)
+"""
 function tbspline3(t,ds,tb,b,NPB::Int64)
   if NPB < 1
     error("tbspline3: number of B-spline basis must be integer and over 1")
@@ -44,6 +81,23 @@ function tbspline3(t,ds,tb,b,NPB::Int64)
 end
 
 # === Retrieve B-spline knot
+"""
+    retrieveb(NPB,tb,ds,t1,t2,num)
+
+Identify unusable nodes of B-spline bases
+
+Arguments:
+* `NPB`: Number of B-spline bases
+* `tb`: Time at nodes that B-spine bases are deployed (vector)
+* `ds`: Temporal interval of B-spline bases
+
+Output:
+* `NPBV`: Number of usable B-spline bases
+* `id`: if B-spline basis is not used, `id=0` (vector with norm of `NPB`)
+
+# Example
+    NPBV, id = retrieveb(NPB,tb,ds,t1,t2,num) 
+"""
 function retrieveb(NPB::Int64,tb,ds,t1,t2,num::Int64)
   if NPB < 1
     error("retrieveb: number of B-spline basis must be integer and over 1")

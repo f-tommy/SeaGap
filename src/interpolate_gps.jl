@@ -1,7 +1,28 @@
 #using LinearAlgebra
 #using Dierckx
-export interpolate_gps
 
+export interpolate_gps
+"""
+    interpolate_gps(t0,x0,y0,z0,h0,p0,r0,tp0,tt0,nump; ks)
+
+Iterpolate GNSS position and attitude when an acoustic signal is transmitted from a sea-surface transducer and arrived at the sea-surface transducer
+
+* `t0`: Time [sec] (`nump` size of vector)
+* `x0`: EW position [m] (`nump` size of vector)
+* `y0`: NS position [m] (`nump` size of vector)
+* `z0`: UD position [m] (`nump` size of vector)
+* `h0`: Heading [deg] (`nump` size of vector)
+* `p0`: Pitch [deg] (`nump` size of vector)
+* `r0`: Roll [deg] (`nump` size of vector)
+* `tp0`: Time when an coustic signal transmitted [sec] (`numk` size of vector)
+* `tt0`: Travel-time [sec] (`tp0`+`tt0`->an acoustic signal is arrived: `numk` size of vector)
+* `nump`: Number of data for `t0`...`r0`
+* `numk`: Number of transponders for `tp0` and `tt0`
+* `ks`: Degree of spline function for interpoaltion (`ks=3` in default)
+
+# Example
+    xd0,yd0,zd0,hd0,pd0,rd0,xd1,yd1,zd1,hd1,pd1,rd1,tp1 = interpolate_gps(t0,x0,y0,z0,h0,p0,r0,tp0,tt0,nump)
+"""
 function interpolate_gps(t0,x0,y0,z0,h0,p0,r0,tp0,tt0,nump,numk::Int64,maxp::Int64; ks=3)
   # --- Make cubic spline function
   cubic_x = Spline1D(t0, x0, k=ks)

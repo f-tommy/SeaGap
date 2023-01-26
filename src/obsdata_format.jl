@@ -2,6 +2,21 @@
 #using Printf
 
 export obsdata_format
+"""
+    obsdata_format(numk; fno0,fno,fn1,fn21,fn22,maxp)
+
+Make observational data file `fno` from GNSS antenna position time-series with attitude `fn1` and travel-time time-series file `fn21`-k.`fn22`.
+
+* `numk`: Number of seafloor tranponders at a site
+* `fn0`: Log file name
+* `fno`: Output file name (`fno="obsdata.inp"` in default)
+* `fn1`: File name for GNSS antenna position time-series with attitude (`fn1=gps.jxyhhpr` in default)
+* `fn21` and `fn22`: File names for travel-time time-series file (`fn21="pxp-"` and `fn22=".jttq"` in default; if default names with 3 tranponders, "pxp-1.jttq", "pxp-2.jttq", and "pxp-3.jttq" must be prepared)
+* `maxp`: Maximum number for readable shots (`maxp=50000` in default; if you have shot data > 50000, you have to provide larger value for `maxp`)
+
+# Example
+    obsdata_format(4)
+"""
 function obsdata_format(numk=4::Int64 ;fno0="log.txt"::String,fno="obsdata.inp"::String,fn1="gps.jxyhhpr"::String,fn21="pxp-"::String,fn22=".jttq"::String,maxp = 50000::Int64)
   println(stderr," === GNSS-A observational data formatting  ===")
   # --- Log

@@ -12,6 +12,22 @@ function bitarr_to_int(arr)
   return sum(arr .* (2 .^ collect(length(arr)-1:-1:0)))
 end
 
+"""
+    convert_displacement(vx,vy,vz; redu,sredu_hor,sredu_ver,fno,fn,t0)
+
+Convert a position time-series file `fn` (1: the observation period [sec], 2-4: EW-NS-UD positions [m],5-7: EW-NS-UD Std of positions [m]) into an easily-readable time-series file `fno` (1: the observation period [year], 2-4: EW-NS-UD position [cm] eliminating a stable motion `vx`-`vy`-`vz`, 5-7: EW-NS-UD Std of positions [cm], 8-10: ID for usable/unusable data (1/0) for each component).
+
+* `vx`, `vy`, `vz`: constant velocities which are eliminated from the time-series (Unit: cm/yr)
+* `redu`: if `redu=true`, the large estimation errors are identified as unusable (estimation errors in EW and NS components > `sredu_hor`; those in UD component > `sredu_ver`); if `redu=false`, all are identified as usable
+* `sredu_hor`: Estimation error limit to be usable for horizontal components (`sredu_hor=30.0` [cm] in default)
+* `sredu_ver`: Estimation error limit to be usable for vertical component (`sredu_ver=30.0` [cm] in default)
+* `fno`: Arranged time-series file (`fno="converted_position.out"` in defalult)
+* `fn`: Input time-series file (`fn="position_merge.out"` in defalult)
+* `t0`: Reference time (`t0="2000-01-01T12:00:00"` in default; refer Date & Time processing [e.g., `sec2year()`])
+
+# Example
+    convert_displacement(1.79,-1.79,0.0,sredu_hor=30.0,sredu_ver=30.0,fno="converted_position.out")
+"""
 function convert_displacement(vx0=0.0,vy0=0.0,vz0=0.0; redu=true,sredu_hor=30.0,sredu_ver=30.0,fno="converted_position.out"::String,fn="position_merge.out"::String,t0="2000-01-01T12:00:00")
   # --- Read
   println(stderr," --- Read $fn")

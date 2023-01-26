@@ -4,6 +4,20 @@
 #using Printf
 
 export ll2xy, ll2xy_vec, xy2ll, xy2ll_vec, ll2xy_txt, xy2ll_txt
+"""
+    ll2xy(lon,lat,lon0,lat0)
+
+Transform `lon` and `lat` into `x` and `y` in Cartesian coordinate system by mapproject command in `GMT` with the origin of `lon0` and `lat0`.
+If you change the default setting of GMT, you have to reset the setting especially for Projection as `gmt("gmtset PROJ_ELLIPSOID WGS-84")`.
+
+* `lon`: Longitude to be transformed
+* `lat`: Latitude to be transformed
+* `lon0`: Longitude for the origin
+* `lat0`: Latitude for the origin
+
+# Example
+    x, y = ll2xy(lon,lat,lon0,lat0)
+"""
 function ll2xy(lon,lat,lon0,lat0)
   deg1 = floor(lon0)
   deg2 = deg1 + 0.5
@@ -11,6 +25,20 @@ function ll2xy(lon,lat,lon0,lat0)
   return x, y
 end
 
+"""
+    xy2ll(x,y,lon0,lat0)
+
+Transform `x` and `y` in Cartesian coordinate system into `lon` and `lat` by mapproject command in `GMT` with the origin of `lon0` and `lat0`.
+If you change the default setting of GMT, you have to reset the setting especially for Projection as `gmt("gmtset PROJ_ELLIPSOID WGS-84")`.
+
+* `x`: EW position to be transformed [m]
+* `y`: NS position to be transformed [m]
+* `lon0`: Longitude for the origin
+* `lat0`: Latitude for the origin                                                   
+
+# Example
+    lon, lat = xy2ll(x,y,lon0,lat0)
+"""
 function xy2ll(x,y,lon0,lat0)
   deg1 = floor(lon0)
   deg2 = deg1 + 0.5
@@ -18,6 +46,20 @@ function xy2ll(x,y,lon0,lat0)
   return lon, lat
 end
 
+"""
+    ll2xy_vec(lon,lat,lon0,lat0)
+
+Transform multiple `lon` and `lat` into `x` and `y` in Cartesian coordinate system by mapproject command in `GMT` with the origin of `lon0` and `lat0`.
+If you change the default setting of GMT, you have to reset the setting especially for Projection as `gmt("gmtset PROJ_ELLIPSOID WGS-84")`.
+
+* `lon`: Longitude to be transformed (vector)
+* `lat`: Latitude to be transformed (vector)
+* `lon0`: Longitude for the origin
+* `lat0`: Latitude for the origin
+
+# Example
+    x, y = ll2xy(lon,lat,lon0,lat0)
+"""
 function ll2xy_vec(lon,lat,lon0,lat0)
   deg1 = floor(lon0)
   deg2 = deg1 + 0.5
@@ -26,6 +68,20 @@ function ll2xy_vec(lon,lat,lon0,lat0)
   return xy[1:num,1],xy[1:num,2]
 end
 
+"""
+    xy2ll_vec(x,y,lon0,lat0)
+
+Transform multiple `x` and `y` in Cartesian coordinate system into `lon` and `lat` by mapproject command in `GMT` with the origin of `lon0` and `lat0`.
+If you change the default setting of GMT, you have to reset the setting especially for Projection as `gmt("gmtset PROJ_ELLIPSOID WGS-84")`.
+
+* `x`: EW position to be transformed [m] (vector)
+* `y`: NS position to be transformed [m] (vector)
+* `lon0`: Longitude for the origin
+* `lat0`: Latitude for the origin                                                   
+
+# Example
+    lon, lat = xy2ll(x,y,lon0,lat0)
+"""
 function xy2ll_vec(x,y,lon0,lat0)
   deg1 = floor(lon0)
   deg2 = deg1 + 0.5
@@ -34,6 +90,21 @@ function xy2ll_vec(x,y,lon0,lat0)
   return ll[1:num,1],ll[1:num,2]
 end
 
+"""
+    ll2xy_txt(fn0,fn,ks,lon0,lat0)
+
+Transform longitude and latitude written in a text file `fn0` into positions in Cartesian coordinate system by mapproject command in `GMT` with the origin of `lon0` and `lat0`, and the results are wirtten in a text file `fn`.
+If you change the default setting of GMT, you have to reset the setting especially for Projection as `gmt("gmtset PROJ_ELLIPSOID WGS-84")`.
+
+* `fn0`: Input file name (`ks`th and `ks+1`th columns show longitude and latitude, respectively)
+* `fn`: Output file name
+* `ks`: Column number listing longitudes
+* `lon0`: Longitude for the origin
+* `lat0`: Latitude for the origin
+
+# Example
+    ll2xy_txt("test1.txt","test1_converted.txt",lon0,lat0)
+"""
 function ll2xy_txt(fn0::String,fn::String,ks::Int64,lon0,lat0)
   deg1 = floor(lon0)
   deg2 = deg1 + 0.5
@@ -103,6 +174,21 @@ function ll2xy_txt(fn0::String,fn::String,ks::Int64,lon0,lat0)
   end
 end 
 
+"""
+    xy2ll_txt(fn0,fn,ks,lon0,lat0)
+
+Transform XY-positions written in a text file `fn0` into longitudes and latitudes by mapproject command in `GMT` with the origin of `lon0` and `lat0`, and the results are wirtten in a text file `fn`.
+If you change the default setting of GMT, you have to reset the setting especially for Projection as `gmt("gmtset PROJ_ELLIPSOID WGS-84")`.
+
+* `fn0`: Input file name (`ks`th and `ks+1`th columns show EW and NS positions, respectively)
+* `fn`: Output file name
+* `ks`: Column number listing X-value 
+* `lon0`: Longitude for the origin
+* `lat0`: Latitude for the origin
+
+# Example
+    xy2ll_txt("test2.txt","test2_converted.txt",lon0,lat0)
+"""
 function xy2ll_txt(fn0::String,fn::String,ks::Int64,lon0,lat0)
   deg1 = floor(lon0)
   deg2 = deg1 + 0.5

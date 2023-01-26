@@ -4,11 +4,50 @@
 #using Printf
 #include("/usr/local/share/julia_bin/unixsort.jl")
 #include("LineFitting.jl")
-# Usage: plot_displacement(2012,2019,plot_scale=false,pscale=0.5)
 
 export plot_displacement
 
-function plot_displacement(ts,te,EW_range=(-1,1),NS_range=(-1,1),UD_range=(-1,1); autoscale=true,sigma=10,cal=true::Bool,weight=true::Bool,predict=true::Bool,fno1="time-series.pdf"::String,fno2="velocity.out",fno3="predict",fn="converted_position.out"::String,plot_size=(550,650),lmargin=1.5,rmargin=1.5, tmargin=1.0, bmargin=-1,bmargin0=-4.5,show=false::Bool,ms=3::Int64,lfs=9::Int64,tfs=7::Int64,int=50::Int64,lw=2,msw=1,pscale=0.5,fa=0.25,lgs=6::Int64)
+"""
+    plot_displacement(ts,te,EW_range,NS_range,UD_range; autoscale,sigma,cal,weight,predict,fno1,fno2,fno3,fn,plot_size,lmargin,rmargin,tmargin,bmargin,bmargin0,show,ms,lfs,tfs,int,lw,msw,pscale,fa,lgs)
+
+Make a figure of array displacement time-series.
+The input file `fn` is converted time-series data through `convert_displacement()`. 
+Optionally, you can calculate linear fitting lines.
+
+* `ts`: Start time of the figure (Time at the left edge of the figure) [yr]
+* `te`: End time of the figure (Time at the right edge of the figure) [yr]
+* `EW_range`, `NS_range`, `UD_range`: If `autoscale=false`, the range of Y-axis is set to be those ranges
+* autoscale: if `autoscale=true` (default), the range of Y-axis is automatically determined depending on the usable array displacements
+* `sigma`: Errorbar scaling (Errorbar scaling (Since standard deviation of an array displacement tends to be small, the plotting errorbar is multiplied by `sigma`: `sigma=10` in default)
+* `cal`: if `cal=true` (default), a regression line is calculated for each component, is shown in the figure, and the regression results are written in `fno2` as a text file
+* `weight`: if `weight=true` (default), the regression line is calculated considering the weight; the weight is provided as an inverse square of the observation error (`weight=true` in default)
+* `predict`: if `predict=true` (default), the predicted values from the regression line are written in "`fno3`-EW.txt", "`fno3`-NS.txt", and "`fno3`-UD.txt"
+* `fno1`: Output figure name (`fno1="time-series.pdf"` in default)
+* `fno2`: Name of an output text file showing array displacement rates (`fno2="velocity.out"` in default)
+* `fno3`: Indicator name of output text files showing the predicted values from the regression lines (`fno3="predict"` in default)
+* `fn`: Input file name (`fn="converted_position.out"` in default)
+* `show`:  If `show=false`, the figure is saved as `fno` (`fno` is name of the output figure). If `show=true` in REPL, a figure is temporally shown.
+* `plot_size`: Figure size (`plot_size=(550,650)` in default)
+* `lmargin`: Plot margin for the left edge (`lmargin=1.5` in default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.5` in default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=-1.0` in default)
+* `bmargin0`: Plot margin for the bottom edges of upper two panels (`bmargin0=-4.5` in default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is saved as `fno` (`show=false` in default)
+* `ms`: Plotted marker size (`ms=3` in default)
+* `lfs`: Fontsize for label (`lfs=9` in default)
+* `tfs`: Fontsize for tick (`tfs=7` in default)
+* `lw`: Width of fitting lines (`lw=2` in default)
+* `msw`: Width of marker outline (Errorbar thickness, `msw=1` in default)
+* `pscale`: if you set smaller value, the autoscale Y-axis range is wider (`pscale=0.5` in default)
+* `fa`: Transparency of fill color of confidence intervali (`fa=0.5` in default)
+* `lgs`: Label Fontsize (`lgs=6` in default)
+* `alp`: Percentage for confidence interval (`alp=0.95` in default)
+
+# Example
+    plot_displacement(2012,2019,pscale=0.5)
+"""
+function plot_displacement(ts,te,EW_range=(-1,1),NS_range=(-1,1),UD_range=(-1,1); autoscale=true,sigma=10,cal=true::Bool,weight=true::Bool,predict=true::Bool,fno1="time-series.pdf"::String,fno2="velocity.out",fno3="predict",fn="converted_position.out"::String,plot_size=(550,650),lmargin=1.5,rmargin=1.5, tmargin=1.0, bmargin=-1,bmargin0=-4.5,show=false::Bool,ms=3::Int64,lfs=9::Int64,tfs=7::Int64,lw=2,msw=1,pscale=0.5,fa=0.25,lgs=6::Int64,alp=0.95)
   # --- Read
   println(stderr," --- Read $fn")
   dat0, header = DelimitedFiles.readdlm(fn,header=true)
@@ -29,13 +68,13 @@ function plot_displacement(ts,te,EW_range=(-1,1),NS_range=(-1,1),UD_range=(-1,1)
       newTy = collect(range(ty[1],ty[end],50))
       newTz = collect(range(tz[1],tz[end],50))
       if weight == true
-        lsx = linefit(tx,dx,sx.^(-2),newX=newTx)
-        lsy = linefit(ty,dy,sy.^(-2),newX=newTy)
-        lsz = linefit(tz,dz,sz.^(-2),newX=newTz)
+        lsx = linefit(tx,dx,sx.^(-2),alpha=alp,newX=newTx)
+        lsy = linefit(ty,dy,sy.^(-2),alpha=alp,newX=newTy)
+        lsz = linefit(tz,dz,sz.^(-2),alpha=alp,newX=newTz)
       else
-        lsx = linefit(tx,dx,newX=newTx)
-        lsy = linefit(ty,dy,newX=newTy)
-        lsz = linefit(tz,dz,newX=newTz)
+        lsx = linefit(tx,dx,alpha=alp,newX=newTx)
+        lsy = linefit(ty,dy,alpha=alp,newX=newTy)
+        lsz = linefit(tz,dz,alpha=alp,newX=newTz)
       end
       vx = lsx.coef[2]; vy = lsy.coef[2]; vz = lsz.coef[2]
       svx = lsx.coefstd[2]; svy = lsy.coefstd[2]; svz = lsz.coefstd[2]

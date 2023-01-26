@@ -4,8 +4,26 @@
 #using Printf
 
 export plot_denoise, denoise
-function plot_denoise(;resrange=(-3,3),resrange2=(-1,1), autoscale=true::Bool,fn="denoise.png"::String,fn0="denoise.out"::String, plot_size=(1200,1200),lmargin=6.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=false::Bool, ms=6::Int64)
-  dat0 = DelimitedFiles.readdlm(fn0)
+"""
+    plot_denoise(;resrange,resrange2,autoscale,fn,fno,plot_size,lmargin,rmargin,tmargin,bmargin,show,ms)
+
+Make a figure of `fno` from the `denoise()` output file.
+
+* `resrange`: Vertical range for the vertically-projected travel-time residual [ms] (with NTD) (`resrange=(-3,3)` in default)
+* `resrange2`: Vertical range for the vertically-projected travel-time residual [ms] (excluding NTD) (`resrange2=(-1,1)` in default)
+* `autoscale`: if `autoscale=true`, the vertical ranges are automatically determined; if `autoscale=false`, the vertical ranges are fixed to `resrange` and `resrange2` (`autoscale=true` in default)
+* `plot_size`: Figure size (`plot_size=(1200,1200)` in default)
+* `fn`: Input file name (`fn="denoise.out"` in defualt)
+* `fno`: Output file name (`fno="denoise.png"` in defualt)
+* `lmargin`: Plot margin for the left edge (`lmargin=6.0` in default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` in default)
+* `ms`: Plotted marker size (`ms=6` in default)
+"""
+function plot_denoise(;resrange=(-3,3),resrange2=(-1,1), autoscale=true::Bool,fno="denoise.png"::String,fn="denoise.out"::String, plot_size=(1200,1200),lmargin=6.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=false::Bool, ms=6::Int64)
+  dat0 = DelimitedFiles.readdlm(fn)
   num = size(dat0)[1]
   dat = unixsort2(dat0,3,2)
   t0 = dat[1,3]
@@ -89,12 +107,46 @@ function plot_denoise(;resrange=(-3,3),resrange2=(-1,1), autoscale=true::Bool,fn
   end
   plts = plot(p3...,layout=(numk,1), size=plot_size)
   if show == false
-    savefig(plts,fn)
+    savefig(plts,fno)
   else
     gui(plts)
   end
 end
 
+"""
+    denoise(lat,XDUCER_DEPTH,resrange,resrange2; method,autoscale,k,n,sigma,save,prompt,fn1,fn2,fn3,fn4,fn0,plot_size,lmargin,rmargin,tmargin,bmargin,show,fno1,fno2)
+
+Calculate travel-time residual, estimate smoothed travel-time residuals by `n` running `method` filter, exclude outliers beyond `sigma` Std, and plot them by `plot_denoise()`. The denoised observational file is rewritten in `fn4`.
+
+* `lat`: Site latitude
+* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `method`: Method of running filter ("mean" or "method"; `method="median"` in default)
+* `k`: if `k=0`, `denoise()` is performed for all transponders; if `k` >= 1, `denoise()` is performed for the `k`th transponder. 
+* `n`: Window size for the running filter
+* `sigma`: Outlier threshold
+* `save`: if `save=true`, the original observation data file `fn4` is renamed and saved as `fn0` (`save=true` in default)
+* `prompt`: if `prompt=true`, confirmation message is shown; if false, the denoised observation file is forcely saved (`prompt=true` in default)  
+
+* `fn1`: GNSS antenna-transducer offset (`fn1="tr-ant.inp"` in default)
+* `fn2`: Initial transponders position (`fn2="pxp-ini.xyh"` in default)
+* `fn3`: Initial sound speed structure (`fn3="ss_prof.zv"` in default)
+* `fn4`: Observational file (`fn4="obsdata.inp"` in default)
+* `fn0`: if `save=true`, `fn4` is saved (`fn0="obsdata.inp_org"` in default)
+
+* `resrange`: Vertical range for the vertically-projected travel-time residual [ms] (with NTD) (`resrange=(-3,3)` in default)
+* `resrange2`: Vertical range for the vertically-projected travel-time residual [ms] (excluding NTD) (`resrange2=(-1,1)` in default)
+* `autoscale`: if `autoscale=true`, the vertical ranges are automatically determined; if `autoscale=false`, the vertical ranges are fixed to `resrange` and `resrange2` (`autoscale=true` in default)
+* `plot_size`: Figure size (`plot_size=(1200,1200)` in default)
+* `lmargin`: Plot margin for the left edge (`lmargin=6.0` in default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` in default)
+* `ms`: Plotted marker size (`ms=6` in default)
+
+# Example
+    denoise(lat,XDUCER_DEPTH,k=0,n=7,sigma=4.0,method="median")
+"""
 function denoise(lat,XDUCER_DEPTH,resrange=(-3,3),resrange2=(-1,1); method="median"::String,autoscale=true::Bool,k=0,n=15,sigma=4.0,save=true::Bool,prompt=true::Bool,fn1="tr-ant.inp"::String, fn2="pxp-ini.xyh"::String, fn3="ss_prof.zv"::String, fn4="obsdata.inp"::String, fn0="obsdata.inp_org"::String, plot_size=(1200,1200),lmargin=6.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=true::Bool, fno1="denoise.out"::String, fno2="denoise.png"::String)
   # Calcualte travel-time residuals
   nv,kv,t1,t2,tp,tc,tr,vert = ttres(lat,XDUCER_DEPTH, fn1=fn1, fn2=fn2, fn3=fn3, fn4=fn4)

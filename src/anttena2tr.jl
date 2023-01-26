@@ -6,6 +6,14 @@
 #using LinearAlgebra
 export rotate, anttena2tr
 
+"""
+    rotate(x,ex,ey,ez)
+
+Euler roation for three component vector `x` depending on `ex`, `ey`, and `ez`.
+
+# Example
+    y  = rotate(x,ex,ey,ez)
+"""
 function rotate(x,ex,ey,ez)
   a = sqrt(ex^2+ey^2+ez^2)
   if abs(a) < 1.e-10
@@ -28,6 +36,14 @@ function rotate(x,ex,ey,ez)
   return y
 end
 
+"""
+    anttena2tr(x0,y0,z0,h,p,r,e)
+                                                                                  
+Transform GNSS antenna position in an locally orthogonal coordinate (x0,y0,z0) into sea-surface transducer position (`x`,`y`,`z`) depending on vessel's attitude (heading:`h`, pitch:`p`, roll:`r`) with three component of antenna-transducer offsets `e` (the transduecer position from the antenna position).
+
+# Example
+    x, y, z = anttena2tr(x0,y0,z0,h,p,r,e)
+"""
 function anttena2tr(x0,y0,z0,h,p,r,e)
   # --- deg2rad
   hh = h*pi/180.0

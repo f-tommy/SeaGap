@@ -68,7 +68,7 @@ function date2year(t)
 end
 
 """
-    date2year_txt(fn0,fn)                                                                 
+    date2year_txt(fn0,fn)
 
 Read text file `fn0`(file name), convert date at 1st column into year, and write `fn` as an output file.
 

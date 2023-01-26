@@ -2,6 +2,23 @@
 #using DelimitedFiles
 
 export plot_AICBIC
+"""
+    plot_AICBIC(;type,fno,fn,lmargin,rmargin,tmargin,bmargin,show)
+
+Make a figure plotting `type` (AIC or BIC) values searched by `pos_array_all_AICBIC()`.
+
+* `type`: "AIC" or "BIC" (`type="BIC"` in default)
+* `fno`: Output figure name (`fno="AICBIC_search.pdf"` in default)
+* `fn`: Input file name obtained by `pos_array_all_AICBIC()` (`fn="AICBIC_search.out"` in default)
+* `lmargin`: Margin of figure for left edge (`lmargin=3.5` in default)
+* `rmargin`: Margin of figure for right edge (`rmargin=1.5` in default)
+* `tmargin`: Margin of figure for top edge (`tmargin=1.5` in default)
+* `bmargin`: Margin of figure for bottom edge (`bmargin=1.5` in default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is saved as `fno` (`show=falsei` in default)
+
+# Example
+    plot_AICBIC(type="BIC")
+"""
 function plot_AICBIC(;type="BIC"::String,fno="AICBIC_search.pdf"::String,fn="AICBIC_search.out"::String, lmargin=3.5, rmargin=1.5, tmargin=1.5, bmargin=1.5, show=false::Bool)
   dat0 = DelimitedFiles.readdlm(fn)
   num = size(dat0)[1]
