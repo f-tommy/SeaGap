@@ -101,7 +101,7 @@ function plot_histogram2d(;fn="sample.out"::String,show=false::Bool,fno="histogr
   if show == false
     savefig(plts,fno)
   else
-    gui(plt)
+    gui(plts)
   end
   # --- Close process
   time2 = now()
