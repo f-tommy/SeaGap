@@ -1,5 +1,18 @@
 #using Statistics
 export runmed, runave
+
+"""
+    runmed(x,k)
+
+Perform a running median filter for 1-d arrangement data `x`.
+
+* `x`: 1-d arrangement data
+* `k`: Window size
+
+# Example
+   x = collect(range(0,10,21))+randn(21)
+   newx = runmed(x,3)
+"""
 function runmed(x,k::Int64)
   if k < 3
     error("runmed: k must be >=3")
@@ -29,6 +42,18 @@ function runmed(x,k::Int64)
   return y
 end
 
+"""
+    runave(x,k)
+
+Perform a running average filter for 1-d arrangement data `x`.
+
+* `x`: 1-d arrangement data
+* `k`: Window size
+
+# Example
+   x = collect(range(0,10,21))+randn(21)
+   newx = runave(x,3)
+"""
 function runave(x,k::Int64)
   if k < 3
     error("runave: k must be >=3")

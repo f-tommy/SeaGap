@@ -1,4 +1,12 @@
 export mat2tuple, tuple2mat, unixsort, unixsort2
+"""
+    mat2tuple(x)
+
+Convert matrix `x` into tuple
+
+# Example
+    y = mat2tuple([1 2 3; 4 5 6])
+""" 
 function mat2tuple(x)
   num1 = size(x)[1]
   num2 = size(x)[2]
@@ -9,6 +17,14 @@ function mat2tuple(x)
   return y
 end
 
+"""
+    tuple2mat(y)
+
+Convert tuple `y` into matrix
+
+# Example
+    x = tuple2mat((1,2))
+"""
 function tuple2mat(y)
   num1 = length(y)
   num2 = length(y[1])

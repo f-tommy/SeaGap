@@ -2,6 +2,29 @@
 #using DelimitedFiles
 
 export plot_track, plot_timetrack
+"""
+    plot_track(xrange,yrange;autoscale,fn1,fn2,fno,plot_size,lmargin,tmargin,bmargin,rmargin,show,ms1,ms2,gfs,cb)
+
+* `xrange`: Range of EW component in meters when `autoscale=false`
+* `yrange`: Range of NS component in meters when `autoscale=false`
+* `autoscale`: If `autoscale=true`, the plot range is automatically defined
+* `fn1`: File name of the seafloor transponder positions (`fn1="pxp-ini.xyh"` in default)
+* `fn2`: Travel-time residual file name (`fn2="obsdata.inp"` in default)
+* `fno`: Output figure name (`fno="track.pdf"` in default)
+* `show`: if `show=true`, a figure is shown on REPL and is not saved as a file (`show=false` in default)
+* `plot_size`: Figure size (`plot_size=(600,500)` in default)
+* `lmargin`: Plot margin for the left edge (`lmargin=2.5` in default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
+* `ms1`: Plotted marker size for transponders (`ms1=10` in default)
+* `ms2`: Plotted marker size for track (`ms2=5` in default)
+* `gfs`: Label fontsize (`gfs=12` in default)
+* `cb`: Color scale (`cb=:lightrainbow` in default)
+
+# Example
+    plot_track((-3000,3000),(-3000,3000),autoscale=false,fn1="pxp-ini.xyh",fn2="obsdata.inp",fno="track.pdf")
+"""
 function plot_track(xrange=(-3000,3000),yrange=(-3000,3000);autoscale=true::Bool,fn1="pxp-ini.xyh"::String,fn2="obsdata.inp"::String,fno="track.pdf"::String,plot_size=(600,500),lmargin=2.5,tmargin=1.0,bmargin=1.0,rmargin=1.0,show=false::Bool,ms1=10::Int64,ms2=5::Int64,gfs=12::Int64,cb=:rainbow)
   a = DelimitedFiles.readdlm(fn1)
   numk = size(a)[1]
@@ -31,6 +54,28 @@ function plot_track(xrange=(-3000,3000),yrange=(-3000,3000);autoscale=true::Bool
   end
 end
 
+"""
+    plot_timetrack(xrange=(-3000,3000),yrange=(-3000,3000),zrange=(0,10) ;autoscale=true::Bool,fn="obsdata.inp"::String,fno="timetrack.pdf"::String,plot_size=(600,800),lmargin=4.0,tmargin=1.0,bmargin=0.5,rmargin=1.0,bmargin0=-3.0,show=false::Bool,ms=5::Int64,gfs=12::Int64)
+
+Make a figure on time-series of the sea-surface platform positions
+
+* `xrange`, `yrange`, and `zrange`: 
+* `fn`: Input observational file (`fn="obsdata.inp"` in default)
+* `fno`: Output figure name (`fno="timetrack.pdf"`)
+* `autoscale`: If `autoscale=true` (default), the plot range is automatically determined. If `autoscale=false`, the plot range of Y-axis is fixed by `xrange`, `yrange`, and `zrange`.
+* `plot_size`: Figure size (`plot_size=(600,800)` in default)
+* `lmargin`: Plot margin for the left edge (`lmargin=4.0` in default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=0.5` in default)
+* `bmargin0`: Plot margin for the bottom edges of upper two panels (`bmargin0=-3.0` in default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is saved as `fno` (`show=false` in default)
+* `ms`: Plotted marker size (`ms=5` in default)
+* `gfs`: Fontsize for label (gudefontsize: `gfs=12` in default)
+
+# Example
+    plot_timetrack(fno="timetrack.png")
+"""
 function plot_timetrack(xrange=(-3000,3000),yrange=(-3000,3000),zrange=(0,10) ;autoscale=true::Bool,fn="obsdata.inp"::String,fno="timetrack.pdf"::String,plot_size=(600,800),lmargin=4.0,tmargin=1.0,bmargin=0.5,rmargin=1.0,bmargin0=-3.0,show=false::Bool,ms=5::Int64,gfs=12::Int64)
   a = DelimitedFiles.readdlm(fn)
   num = size(a)[1]

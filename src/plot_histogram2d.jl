@@ -6,6 +6,30 @@
 #plot_histogram2d()
 
 export plot_histogram2d
+"""
+    plot_histogram2d(;fn,show,fno,plot_size,lmargin,tmargin,bmargin,rmargin,nshuffle,lfs,tfs,hm,vm,nbins,pscale)
+
+Make a figure showing histograms, heatmaps, and scatter maps for major six parameters (array displacements, shallow gradients, gradient depth).
+
+* `fn`: Input file (`fn="sample.out"` in default)
+* `fno`: Output figure name
+* `show`: if `show=true`, a figure is shown on REPL and is not saved as a file (`show=false` in default)
+* `nshuffle`: number of plots for each parameter (if all samples are plotted, the figure is crowded; thus, `nshuffle` of samples are randomly picked; if `nshuffle=0`, all samples are plotted; `nshuffle=10000` in default)
+* `nbins`: Number of histogram's intervals (`nbins=50` in default)
+* `plot_size`: Figure size (`plot_size=(700,700)` in default)
+* `lmargin`: Plot margin for the left edge (`lmargin=1.5` in default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.5` in default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
+* `lfs`: Label fontsize (`lfs=5` in default)
+* `tfs`: Tick fontsize (`tfs=4` in default)
+* `pscale`: Length scaling factor for horizontal axis (`pscale=3` in default)
+* `hm`: Horizontal interval of panels (`hm=-1.0` in default) 
+* `vm`: Vertical interval of panels (`vm=-1.0` in default) 
+
+# Example
+    plot_histogram2d(fno="histogram2d.pdf")
+"""
 function plot_histogram2d(;fn="sample.out"::String,show=false::Bool,fno="histogram2d.pdf"::String,plot_size=(700,700),lmargin=1.5,tmargin=1.0,bmargin=1.0,rmargin=1.5,nshuffle=10000::Int64,lfs=5::Int64,tfs=4::Int64,hm=-1.0,vm=-1.0,nbins=50::Int64,pscale=3)
   println(stderr," === Drawing 2d-histograms for pos_array_mcmcpvg samples ===")
   time1 = now()

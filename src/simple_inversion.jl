@@ -2,6 +2,21 @@
 #using LinearAlgebra
 
 export simple_inversion
+"""
+    simple_inversion(d,H)
+
+Simple inversion by linear least squares method without any constraints.
+
+* `d`: Data vector
+* `H`: Karnel matrix
+* `dcal`: Calculation vector
+* `dres`: Residual vector (`d`-`dcal`)
+* `a`: Estimated parameters
+* `e`: iStd of the estimated parameters
+
+# Example
+   dcal, dres, a, e = simple_inversion(d,H)
+"""
 function simple_inversion(d,H)
   # --- Set number
   NN0 = length(d)

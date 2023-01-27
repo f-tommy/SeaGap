@@ -16,6 +16,35 @@
 #include("scale_est.jl")
 
 export pos_array_mcmcpvg
+"""
+    pos_array_mcmcpvg(lat,XDUCER_DEPTH,NPB; fn1,fn2,fn3,fn4,nloop,nburn,NA,scalentd,delta_scale,fno0,fno1,fno2,fno3,fno4,fno5,fno6.fno7)
+
+Perform MCMC-based static array positioning considering a sloping sound speed structure with a fixed number of temporal B-spline bases.
+
+* `lat`: Site latitude
+* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `NPB`: Number of temporal B-spline bases
+* `nloop`: Total number of the MCMC iterations (`nloop=1200000` in default)
+* `nburn`: Burn-in period of the MCMC iterations (samples less than `nburn` is excluded from the final results; `nburn=200000` in default)
+* `NA`: Number of the sampling interval (`NA=5` in default; if you set (`nloop=1200000`, `nburn=200000`, and `NA=5`), you can obtain (1200000-200000)/5 samples)
+* `scalentd`: "true" or "false", which turn on/off the scaling procedure for the parameters for the long-term NTD polynomial functions (`scale_ntd=true` in default)
+* `delta_scale`: the step width for the scaled long-term NTD parameters if `scalentd=true` (`delta_scale=0.001` in default)
+* `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` in default)
+* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` in default)
+* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` in default)
+* `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` in default)
+* `fno0`: Output file name for logging  (`fno0=log.txt` in default)
+* `fno1`: Output file name for the sampled parameters after the burn-in period (`fno1=sample.out` in default)
+* `fno2`: Output file name for the posterior PDFs during the mcmc iteration (`fno2=mcmc.out` in default)
+* `fno3`: Output file name for the mean array displacements (`fno3=position.out` in default)
+* `fno4`: Output file name for the statistical values for the sampled parameters (`fno4=statistics.out` in default)
+* `fno5`: Output file name for the acceptance ratios (`fno5=acceptance.out` in default)
+* `fno6`: Output file name for the travel-time residuals (`fno6=residual_grad.out` in default)
+* `fno7`: Output file name for the estimated B-spline bases (`fno7=bspline.out` in default)
+
+# Example
+    pos_array_mcmcpvg(lat,XDUCER_DEPTH,NPB,delta_scale=0.002)
+"""
 function pos_array_mcmcpvg(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,scalentd=true,delta_scale=0.001,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String)
   println(stderr," === GNSS-A positioning: pos_array_mcmcpvg  ===")
   # --- Input check

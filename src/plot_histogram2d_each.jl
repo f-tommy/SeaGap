@@ -3,6 +3,26 @@
 #using Plots
 
 export plot_histogram2d_each
+"""
+    plot_histogram2d_each(param1,param2; fn,show,fno,plot_size,lmargin,tmargin,bmargin,rmargin,nbins)
+
+Make a figure of a heatmap for certain two parameters (`param1` and `param2`) from the sampling results of `pos_array_mcmcpvg()` or `pos_array_mcmcpvgc()`.
+
+* `param1`: Parameter name 1
+* `param2`: Parameter name 2
+* `fn`: Input file name (`fn="sample.out"` in default)
+* `fno`: Output figure name (`fno="histogram2d_each.pdf"` in default)
+* `plot_size`: Figure size (`plot_size=(650,600)` in default)
+* `lmargin`: Plot margin for the left edge (`lmargin=1.5` in default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.5` in default)
+* `tmargin`: Plot margin for the top edge (`tmargin=0.5` in default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=0.5` in default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is saved as `fno` (`show=false` in default)
+* nbins: Number of histogram's intervals (`nbins=50` in default)
+
+# Example
+    plot_histogram2d_each("UD_disp.","S-NTD_10",fno="histogram2d_UD_SNTD-10.png")
+"""
 function plot_histogram2d_each(param1="EW_disp."::String,param2="NS_disp."::String; fn="sample.out"::String,show=false::Bool,fno="histogram2d_each.pdf"::String,plot_size=(650,600),lmargin=1.5,tmargin=0.5,bmargin=0.5,rmargin=1.5,nbins=50::Int64)
   println(stderr," === Drawing 2d-histogram for pos_array_mcmcpvg samples ===")
   time1 = now()

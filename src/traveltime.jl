@@ -15,6 +15,18 @@
 export localradius, ttvert0, ttsphere, xyz2tt, ttcorrection, xyz2tt_rapid, xyz2ttg_rapid
 
 # === Local Earth radius
+"""
+    localradius(lat)
+
+Estimate a local Earth radius at Latitude of `lat`.
+
+* `lat`: Latitude
+* `Rg`: Gaussian Earth radius
+* `Rl`: Local-mean Earth radius
+
+# Example
+    Rg, Rl = localradius(38.2)
+"""
 function localradius(lat)
   a = 6378137.0 # WGS84 long radius
   b = 6356752.31424 # WGS84 short radius
@@ -28,6 +40,28 @@ function localradius(lat)
 end
 
 # === Calculte tt_vert0
+"""
+    ttvert0(pxp_height,xducer_height,XDUCER_DEPTH,z,v,nz_st,numz)
+
+Calculate one-way travel-time along the nadir path.
+
+Input:
+* `pxp_height`: Seafloor transponder height
+* `xducer_height`: Average sea-surface transducer height
+* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `z`: Arrangement for depth
+* `v`: Arrangement for velocity
+* `nz_st`: Layer number which inculdes transducer
+* `numz`: Number of layers
+
+Output:
+* `tt_vert0`: travel-time along the nadir path
+* `v_deep`: Sound speed at the deepest layer where a transponder locates
+* `v_range`: Distance along the nadir path
+
+# Example
+    tt_vert0, v_deep, v_range = ttvert0(pxp_height,xducer_height,XDUCER_DEPTH,z,v,nz_st,numz)
+"""
 function ttvert0(pxp_height,xducer_height,XDUCER_DEPTH,z,v,nz_st,numz::Int64)
   v_range = xducer_height - pxp_height
   pxp_depth = XDUCER_DEPTH + v_range
@@ -54,6 +88,30 @@ function ttvert0(pxp_height,xducer_height,XDUCER_DEPTH,z,v,nz_st,numz::Int64)
 end
 
 # === Calculate tt_sphere
+"""
+    ttsphere(pxpx,pxpy,pxpz,rsx,rsy,rsz,Ra,tt_vert0,v_deep,v_range)
+
+Calculate "rough" one-way travel-time T_sphere in the spherical coordinates without considering Snell’s law (See Tomita & Kido, 2022).
+
+Input:
+* `pxpx`: EW transponder position [m]
+* `pxpy`: NS transponder position [m]
+* `pxpz`: UD transponder position [m]
+* `rsx`: EW tranducer position [m]
+* `rsy`: NS tranducer position [m]
+* `rsz`: UD tranducer position [m]
+* `Ra`: Local earth radius
+* `tt_vert0`: travel-time along the nadir path
+* `v_deep`: Sound speed at the deepest layer where a transponder locates
+* `v_range`: Distance along the nadir path 
+
+Output:
+* `tt_sphere`: One-way travel-time in the spherical coordinates without considering Snell’s law
+* `theta`: Shot angle
+
+# Example
+    tt_sphere, theta = ttsphere(pxpx,pxpy,pxpz,rsx,rsy,rsz,Ra,tt_vert0,v_deep,v_range)
+"""
 function ttsphere(pxpx,pxpy,pxpz,rsx,rsy,rsz,Ra,tt_vert0,v_deep,v_range)
   delta_z = rsz - pxpz
   theta = sqrt((rsx-pxpx)^2.0+(rsy-pxpy)^2.0) / Ra
@@ -67,6 +125,36 @@ function ttsphere(pxpx,pxpy,pxpz,rsx,rsy,rsz,Ra,tt_vert0,v_deep,v_range)
 end
 
 # === Calculate traveltime
+"""
+    xyz2tt(pxpx,pxpy,pxpz,rsx,rsy,rsz,z,v,nz_st,numz,Ra,XDUCER_DEPTH)
+
+Calculate exact one-way travel-time T_exact (See Tomita & Kido, 2022).
+Usage of this function is also written in Tutorial of the online manual.
+
+Input:
+* `pxpx`: EW transponder position [m]
+* `pxpy`: NS transponder position [m]
+* `pxpz`: UD transponder position [m]
+* `rsx`: EW tranducer position [m]
+* `rsy`: NS tranducer position [m]
+* `rsz`: UD tranducer position [m]
+* `z`: Arrangement for depth
+* `v`: Arrangement for velocity
+* `nz_st`: Layer number which inculdes transducer
+* `numz`: Number of layers
+* `Ra`: Local earth radius
+* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+
+Output:
+* `tc`: One-way travel-time
+* `Nint`: Total number of iterations for the shooting method
+* `vert`: Normalizing factor
+
+# Example
+    px = 1500.0; py = 0.0; pz = -3000.0
+    xd = 100.0; yd = -100.0; zd = -1.5 
+    tc, Nint, vert = xyz2tt(px,py,pz,xd,yd,zd,z,v,nz_st,numz,Rg,XDUCER_DEPTH)
+"""
 function xyz2tt(pxpx,pxpy,pxpz,rsx,rsy,rsz,z,v,nz_st::Int64,numz::Int64,Ra,XDUCER_DEPTH)
   # --- Set basic parameters
   eps_dist = 1.e-5
@@ -122,6 +210,33 @@ function xyz2tt(pxpx,pxpy,pxpz,rsx,rsy,rsz,z,v,nz_st::Int64,numz::Int64,Ra,XDUCE
 end
 
 # === Travel-time correction
+"""
+    ttcorrection(pxpx,pxpy,pxpz,xducer_height,z,v,nz_st,numz,XDUCER_DEPTH,lat)
+
+Estimate coefficients for polynomial functions to calculate approximate travel-time used in `xyz2tt_rapid()`.
+
+Input:
+* `pxpx`: EW transponder position [m]
+* `pxpy`: NS transponder position [m]
+* `pxpz`: UD transponder position [m]
+* `xducer_height`: Average sea-surface transducer height 
+* `z`: Arrangement for depth
+* `v`: Arrangement for velocity
+* `nz_st`: Layer number which inculdes transducer
+* `numz`: Number of layers
+* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `lat`: Latitude
+
+Output:
+* `TV0`: travel-time along the nadir path
+* `Vd`: Sound speed at the deepest layer where a transponder locates
+* `Vr`: Distance along the nadir path 
+* `cc`: Coefficients vector
+* `rms`: RMS when optimizing travel-times
+
+# Example
+    Tv0, Vd, Vr, cc, rms = ttcorrection(px,py,pz,xducer_height,z,v,nz_st,numz,XDUCER_DEPTH,lat)
+"""
 function ttcorrection(pxpx,pxpy,pxpz,xducer_height,z,v,nz_st::Int64,numz::Int64,XDUCER_DEPTH,lat)
   tt_vert0, v_deep, v_range = ttvert0(pxpz,xducer_height,XDUCER_DEPTH,z,v,nz_st,numz)
   # --- Make synthetic data
@@ -173,6 +288,34 @@ function ttcorrection(pxpx,pxpy,pxpz,xducer_height,z,v,nz_st::Int64,numz::Int64,
 end
 
 # === Calculate tt_appr
+"""
+    xyz2tt_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,xducer_height,cc0)
+
+Calculate approximate one-way travel-time T_appr (See Tomita & Kido, 2022). 
+Usage of this function is also written in Tutorial of the online manual.
+
+Input:
+* `pxpx`: EW transponder position [m]
+* `pxpy`: NS transponder position [m]
+* `pxpz`: UD transponder position [m]
+* `rsx`: EW tranducer position [m]
+* `rsy`: NS tranducer position [m]
+* `rsz`: UD tranducer position [m]
+* `Ra`: Local Earth radius
+* `tt_vert0`: travel-time along the nadir path
+* `v_deep`: Sound speed at the deepest layer where a transponder locates
+* `v_range`: Distance along the nadir path 
+* `xducer_height`: Average sea-surface transducer height
+* `cc0`: Coefficients vector estimated by `ttcorrection()`
+
+Output:
+* `tc_r`: Approximate travel-time
+* `to_r`: Rough travel-time (T_sphere)
+* `vert_r`: Normalizing factor
+
+# Example
+    tc_r, to_r, vert_r = xyz2tt_rapid(px,py,pz,xd,yd,zd,Rg,Tv0,Vd,Vr,xducer_height,cc)
+"""
 function xyz2tt_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,xducer_height,cc0)
   delta_z = rsz - pxpz
   theta = sqrt((rsx-pxpx)^2.0+(rsy-pxpy)^2.0) / Rg
@@ -193,6 +336,35 @@ function xyz2tt_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,xduc
 end
 
 # === Calculate tt_appr
+"""
+    xyz2ttg_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,xducer_height,cc0)
+
+Calculate approximate one-way travel-time T_appr and the deep gradient coefficients h (See Tomita & Kido, 2022). 
+Usage of this function is also written in Tutorial of the online manual.
+
+Input:
+* `pxpx`: EW transponder position [m]
+* `pxpy`: NS transponder position [m]
+* `pxpz`: UD transponder position [m]
+* `rsx`: EW tranducer position [m]
+* `rsy`: NS tranducer position [m]
+* `rsz`: UD tranducer position [m]
+* `Ra`: Local Earth radius
+* `tt_vert0`: travel-time along the nadir path
+* `v_deep`: Sound speed at the deepest layer where a transponder locates
+* `v_range`: Distance along the nadir path 
+* `xducer_height`: Average sea-surface transducer height
+* `cc0`: Coefficients vector estimated by `ttcorrection()`
+
+Output:
+* `tt_appr`: Approximate travel-time
+* `vert`: Normalizing factor
+* `hh1`: Deep gradient coefficient in EW component
+* `hh2`: Deep gradient coefficient in NS component
+
+# Example
+    tt_appr, vert, hh1, hh2  = xyz2ttg_rapid(px,py,pz,xd,yd,zd,Rg,Tv0,Vd,Vr,xducer_height,cc)
+"""
 function xyz2ttg_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,xducer_height,cc0)
   delta_z = rsz - pxpz
   theta = sqrt((rsx-pxpx)^2.0+(rsy-pxpy)^2.0) / Rg

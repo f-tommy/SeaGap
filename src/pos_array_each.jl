@@ -4,6 +4,28 @@
 #using LinearAlgebra
 
 export pos_array_each
+"""
+    pos_array_each(lat,XDUCER_DEPTH; fn1,fn2,fn3,fn4,NR,eps,ITMAX,delta_pos,fno0,fno1,fno2)
+
+Perform static array positioning with optimizing offset between a GNSS antenna and a transducer on a sea-surface platform.
+
+* `lat`: Site latitude
+* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `NR`: Minimum number of data to perform estimation for each group
+* `eps`: Convergence threshold (`eps=1.e-4` in default)
+* `IMAX`: Maximum number of iterations (`IMAX=20` in default)
+* `delta_pos`: Infinitesimal amount of the array displacements to calculate the Jacobian matrix (`delta_pos=1.e-4`)
+* `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` in default)
+* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` in default)
+* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` in default)
+* `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` in default)
+* `fno0`: Output file name for logging  (`fno0=log.txt` in default)
+* `fno1`: Output file name for the ipositioning results (`fno1=array_each.out` in default)
+* `fno2`: Output file name for the travel-time residuals (`fno2=residual_each.out` in default)
+
+# Example
+    pos_array_each(42.0,4.0)
+"""
 function pos_array_each(lat,XDUCER_DEPTH=3.0; NR=3::Int64,eps=1.e-4,ITMAX=20::Int64,delta_pos=1.e-4,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fno1="array_each.out"::String,fno2="residual_each.out"::String,fno0="log.txt"::String)
   println(stderr," === GNSS-A positioning: pos_array_each  ===")
   # --- Input check

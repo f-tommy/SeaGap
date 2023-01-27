@@ -144,6 +144,9 @@ Calculate travel-time residual, estimate smoothed travel-time residuals by `n` r
 * `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` in default)
 * `ms`: Plotted marker size (`ms=6` in default)
 
+* `fno1`: Output text file for travel-time residuals
+* `fno2`: Output figure name
+
 # Example
     denoise(lat,XDUCER_DEPTH,k=0,n=7,sigma=4.0,method="median")
 """
@@ -213,7 +216,7 @@ function denoise(lat,XDUCER_DEPTH,resrange=(-3,3),resrange2=(-1,1); method="medi
   end
   # Plot
   println(stderr,"Plot denoised time-series")
-  plot_denoise(fn=fno2,fn0=fno1, resrange=resrange,resrange2=resrange2,plot_size=plot_size,lmargin=lmargin, rmargin=rmargin, tmargin=tmargin, bmargin=bmargin, show=show) 
+  plot_denoise(fno=fno2,fn=fno1, resrange=resrange,resrange2=resrange2,plot_size=plot_size,lmargin=lmargin, rmargin=rmargin, tmargin=tmargin, bmargin=bmargin, show=show) 
   if prompt == true
     q = Base.prompt("Do you accept the denoise processing? (yes/no)")
     if q == "yes"

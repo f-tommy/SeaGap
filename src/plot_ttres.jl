@@ -2,6 +2,26 @@
 #using DelimitedFiles
 
 export plot_ttres
+"""
+    plot_ttres(resrange; autoscale,fn,fn0,plot_size,lmargin,rmargin,tmargin,bmargin,show,ms)
+
+Make a figure of travel-time residuals obtained by `ttres()`
+
+* `resrange`: Plot range of Y-sxis
+* `autoscale`: If `autoscale=true` (default), the plot range is automatically determined. If `autoscale=false`, the plot range of Y-axis is fixed by `resrange`.
+* `fn`: Input file name (`fn="ttres.out"` in default)
+* `fno`: Output figure name (`fno="ttres.pdf"` in default)
+* `plot_size`: Figure size (`plot_size=(650,1200)` in default)
+* `lmargin`: Plot margin for the left edge (`lmargin=6.0` in default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is saved as `fno` (`show=false` in default)
+* `ms`: Plotted marker size (`ms=7` in default)
+
+# Example
+
+"""
 function plot_ttres(resrange=(-3,3); autoscale=true::Bool,fn="ttres.pdf"::String,fn0="ttres.out"::String,plot_size=(650,1200),lmargin=6.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=false::Bool,ms=7::Int64)
   dat0 = DelimitedFiles.readdlm(fn0)
   num = size(dat0)[1]

@@ -2,6 +2,27 @@
 #using DelimitedFiles
 
 export plot_ntd
+"""
+    plot_ntd(ntdrange,resrange; fno,fn,autoscale,plot_size,lmargin,rmargin,tmargin,bmargin,show,ms,bmargin0)
+
+Make a figure of the time-series of the projected travel-time residuals in the nadir direction and the travel-time residuals removing the modeled NTD.
+
+* `ntdrange`: Range of Y-axis for the projected travel-time residuals in the nadir direction
+* `resrange`: Range of Y-axis for the travel-time residuals removing the modeled NTD
+* `fn`: Input file name (`fn="residual.out"` in default)
+* `fno`: Output figure file name (`fno="ntd.pdf"`)
+* `plot_size`: Figure size (`plot_size=(650,650)` in default)
+* `autoscale`: If `autoscale=true` (default), the plot range is automatically determined. If `autoscale=false`, the plot range of Y-axis is fixed by `ntdrange` and `resrange`
+* `lmargin`: Plot margin for the left edge (`lmargin=2.5` in default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
+* `bmargin0`: Plot margin for the bottom edges of upper two panels (`bmargin0=-4.0` in default)
+* `ms`: Plotted marker size (`ms=4` in default)
+
+# Example
+    plot_ntd(fno="ntd.pdf")
+"""
 function plot_ntd(ntdrange=(-3,3),resrange=(-1,1); fno="ntd.pdf"::String,fn="residual.out"::String,autoscale=true,plot_size=(650,650),lmargin=2.5, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=false,ms=4::Int64,bmargin0=-4)
   dat0 = DelimitedFiles.readdlm(fn)
   num = size(dat0)[1]

@@ -6,6 +6,15 @@
 
 export read_info, read_prof, read_ant, read_gps, read_initial, read_jttq, read_pxppos, read_obsdata
 # === Read site info
+"""
+    read_info(filename,site)
+
+Read site location data `filename` and return the location for a certain site given by `site`
+`filename` is a text file with (1:Site_name(str), 2:Lon(deg), 3:Lat(deg), 4:Water_depth(m), 5:Total number of transponders(Int)).
+
+# Example
+    lon,lat,dep,numk = read_info("site_info.txt","G20")
+"""
 function read_info(filename::String,site::String)
   # 1:Site_name(str), 2:Lon(deg), 3:Lat(deg), 4:Water_depth(m), 5:total_number_of_transponders(Int)
   f = open(filename,"r")
@@ -25,6 +34,23 @@ function read_info(filename::String,site::String)
 end
     
 # === Read sound speed file
+"""
+    read_prof(filename,XDUCER_DEPTH)
+
+Read a sound speed profile `filename`.
+
+* `filename`: Input file name for a sound speed profile
+* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+
+Output:
+* `z`: Arrangement for depth
+* `v`: Arrangement for velocity
+* `nz_st`: Layer number which inculdes transducer
+* `numz`: Number of layers
+
+# Example
+    z, v, nz_st, numz = read_prof("ss_prof.zv",3.0)
+"""
 function read_prof(filename::String,XDUCER_DEPTH)
   # --- Read sound speed data
   a = DelimitedFiles.readdlm(filename)
@@ -43,6 +69,14 @@ function read_prof(filename::String,XDUCER_DEPTH)
 end
 
 # === Read TR-ANT offset
+"""
+    read_ant(filename)
+
+Read a file `filename` for an offset between GNSS antenna and transducer, and store it as an arrangement `e`.
+
+# Example
+    e = read_ant("tr-ant.inp")
+"""
 function read_ant(filename::String)
   e0 = DelimitedFiles.readdlm(filename)
   e = transpose(e0)
@@ -51,6 +85,24 @@ function read_ant(filename::String)
 end
 
 # === Read gps positions
+"""
+    read_gps(filename)
+
+Read a file `filename` for time-series of GNSS antenna positions and attitudes, and store them as arrangements.
+
+Output:
+* `numj`: Total number of data
+* `tg0`: Time [sec]
+* `xg0`: EW GNSS positon [m]
+* `yg0`: NS GNSS positon [m]
+* `zg0`: UD GNSS positon [m]
+* `hd`: Heading [deg]
+* `pd`: Pitch [deg]
+* `rd`: Roll [deg]
+
+# Example
+    numj,tg0,xg0,yg0,zg0,hd,pd,rd = read_gps("gps.jxyhhpr")
+"""
 function read_gps(filename::String)
   a = DelimitedFiles.readdlm(filename)
   numj = size(a)[1]
@@ -65,6 +117,22 @@ function read_gps(filename::String)
   return numj,tg0,xg0,yg0,zg0,hd,pd,rd
 end
 
+"""
+    read_initial(filename)
+
+Read a file `filename` for initial values used in `pos_array_mcmcpvg` or `pos_array_mcmcpvgc`, and store them as arrangements.
+
+Output:
+* `np`: Number of data
+* `a0`: Initial value
+* `a1`: Lower limit 
+* `a2`: Upper limit 
+* `da`: Step width
+* `list`: Parameter name
+
+# Example
+    np, a0, a1, a2, da, list = read_initial("initial.inp")
+"""
 function read_initial(filename::String)
   a = DelimitedFiles.readdlm(filename)
   np = size(a)[1]
@@ -81,6 +149,26 @@ function read_initial(filename::String)
 end
 
 # === Read jttq positions
+"""
+    read_jttq(filename,k,tp,tt0,tt,qq)
+
+Read a file `filename` of travel-time data for `k`th transponder, and store them as the arrangements `tp`, `tt0`, `tt`, and `qq`.
+
+Output:
+* `nump`: Total number of acoustic shots
+* `tp`: Time at each shot [sec]
+* `tt0`: Travel-time with mechanical delay
+* `tt`: Travel-time without delay
+* `qq`: Quality value (this is not used; thus, you can put zero for all, if you do not have any quality identifers)
+
+# Example
+    maxp = 5000
+    nump = zeos(3); tp = zeros(3,maxp); tt0 = zeros(3,maxp)
+    tt = zeros(3,maxp); qq = zeros(3,maxp)
+    nump[1] = read_jttq("pxp-1.jttq",1,tp,tt0,tt,qq)
+    nump[2] = read_jttq("pxp-2.jttq",2,tp,tt0,tt,qq)
+    nump[3] = read_jttq("pxp-3.jttq",3,tp,tt0,tt,qq)
+"""
 function read_jttq(filename::String,k::Int64,tp,tt0,tt,qq)
   a = DelimitedFiles.readdlm(filename)
   nump0 = size(a)[1]
@@ -93,6 +181,20 @@ function read_jttq(filename::String,k::Int64,tp,tt0,tt,qq)
 end
 
 # === Read PXP positions
+"""
+    read_pxppos(filename)
+
+Read a file `filename` for seafloor transponder positions, and store them as arrangements.
+
+Output:
+* `numk`: Total number of the seafloor transponders
+* `px`: `numk`-vector of EW postion [m]
+* `py`: `numk`-vector of NS postion [m]
+* `pz`: `numk`-vector of UD postion [m]
+
+# Example
+    numk, px, py ,pz = read_pxppos("pxp-ini.xyh")
+"""
 function read_pxppos(filename::String)
   a = DelimitedFiles.readdlm(filename)
   numk = size(a)[1]
@@ -107,6 +209,34 @@ function read_pxppos(filename::String)
 end 
 
 # === Read observational file as described by JCG-style
+"""
+    read_obsdata(filename)
+
+Read a file `filename` for seafloor transponder positions, and store them as arrangements.
+
+Output:
+* `num`: Total number of data
+* `nk`: Transponder number
+* `tp`: Travel-Time [sec]
+* `t1`: Signal transmitting time [sec]
+* `x1`: EW GNSS antenna position when transmitting [m]
+* `y1`: NS GNSS antenna position when transmitting [m]
+* `z1`: UD GNSS antenna position when transmitting [m]
+* `h1`: Heading when transmitting [deg]
+* `p1`: Pitch when transmitting [deg]
+* `r1`: Roll when transmitting [deg]
+* `t2`: Signal recieving time [sec]
+* `x2`: EW GNSS antenna position when recieving [m]
+* `y2`: NS GNSS antenna position when recieving [m]
+* `z2`: UD GNSS antenna position when recieving [m]
+* `h2`: Heading when recieving [deg]
+* `p2`: Pitch when recieving [deg]
+* `r2`: Roll when recieving [deg]
+* `nf`: Shot group number for `pos_array_each()`
+
+# Example
+    num,nk,tp,t1,x1,y1,z1,h1,p1,r1,t2,x2,y2,z2,h2,p2,r2,nf = read_obsdata("obsdata.inp")
+"""
 function read_obsdata(filename::String)
   # --- Read observation data
   a = DelimitedFiles.readdlm(filename)
@@ -135,6 +265,21 @@ function read_obsdata(filename::String)
   return num,nk,tp,t1,x1,y1,z1,h1,p1,r1,t2,x2,y2,z2,h2,p2,r2,nf
 end
 
+"""
+    read_ntd(filename)
+
+Read a file `filename` for NTD estimation results obtained by `pos_array_all()`, and store them as arrangements.
+
+Output:
+* `ts`: Shot Time [sec]
+* `nk`: Transponder number
+* `to`: Projected travel-time residuals in the nadir direction
+* `tc`: NTD modeled by B-spline bases
+* `tr`: Travel-time residulas subtracting `tc` from `to` 
+
+# Example
+    ts, nk, to, tc, tr = read_ntd("ntd.out")
+"""
 function read_ntd(filename::String)
   # --- Read observation data
   a = DelimitedFiles.readdlm(filename)

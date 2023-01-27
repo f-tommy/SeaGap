@@ -3,6 +3,36 @@
 #using LinearAlgebra
 
 export ttres
+"""
+    ttres(lat,XDUCER_DEPTH; fn1,fn2,fn3,fn4,fno,fno0,save)
+
+Calculate travel-time residuals using fixed transponder positions.
+
+Input:
+* `lat`: Site latitude
+* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `NPB`: Number of temporal B-spline bases
+* `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` in default)
+* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` in default)
+* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` in default)
+* `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` in default)
+* `fno0`: Output file name for logging  (`fno0=log.txt` in default)
+* `fno`: Output file name for the travel-time residuals (`fno=ttres.out` in default)
+* `save`: if `save=true`, calculation results are saved in `fno`
+
+Output:
+* `nv`: Shot number
+* `kv`: Seafloor transponder number
+* `t1`: Signal transmitting time [sec]
+* `t2`: Signal recieving time [sec]
+* `tp`: Observed travel-time
+* `tc`: Calculated travel-time
+* `tr`: Travel-time residual
+* `vert`: Normalizing factor
+
+# Example
+    nv, kv, t1, t2, tp, tc, tr, vert = ttres(lat,XDUCER_DEPTH)
+"""
 function ttres(lat=38.0,XDUCER_DEPTH=3.0;fn1="tr-ant.inp", fn2="pxp-ini.xyh", fn3="ss_prof.zv", fn4="obsdata.inp",fno="ttres.out",fno0="log.txt",save=false)
   println(stderr," === Calculate trave-time residuals  ===")
   # --- Start log
@@ -41,7 +71,21 @@ function ttres(lat=38.0,XDUCER_DEPTH=3.0;fn1="tr-ant.inp", fn2="pxp-ini.xyh", fn
 
 # --- Main Anlysis --- #
   nv = Int64[]; kv = Int64[]; tcv = Float64[]; vertv = Float64[]
-  open(fno,"w") do out
+  if save == true
+    open(fno,"w") do out
+      for n in 1:num
+        k = nk[n]  # PXP number
+        Rg, Rl = localradius(lat)
+        # --- Calculate TT
+        tc1, Nint1, vert1 = xyz2tt(px[k],py[k],pz[k],xd1[n],yd1[n],zd1[n],z,v,nz_st,numz,Rg,XDUCER_DEPTH)
+        tc2, Nint2, vert2 = xyz2tt(px[k],py[k],pz[k],xd2[n],yd2[n],zd2[n],z,v,nz_st,numz,Rg,XDUCER_DEPTH)
+        vert = (vert1 + vert2) / 2.0
+        tc = tc1 + tc2
+        println(out,"$n $k $(t1[n]) $(t2[n]) $(tp[n]) $tc $(tp[n]-tc) $vert")
+        push!(nv,n); push!(kv,k); push!(tcv,tc); push!(vertv,vert)
+      end
+    end
+  else
     for n in 1:num
       k = nk[n]  # PXP number
       Rg, Rl = localradius(lat)
@@ -50,11 +94,11 @@ function ttres(lat=38.0,XDUCER_DEPTH=3.0;fn1="tr-ant.inp", fn2="pxp-ini.xyh", fn
       tc2, Nint2, vert2 = xyz2tt(px[k],py[k],pz[k],xd2[n],yd2[n],zd2[n],z,v,nz_st,numz,Rg,XDUCER_DEPTH)
       vert = (vert1 + vert2) / 2.0
       tc = tc1 + tc2
-      println(out,"$n $k $(t1[n]) $(t2[n]) $(tp[n]) $tc $(tp[n]-tc) $vert")
       push!(nv,n); push!(kv,k); push!(tcv,tc); push!(vertv,vert)
     end
   end
   return nv, kv, t1, t2, tp, tcv, tp-tcv, vertv
+
 
 # --- Close process --- #
   time2 = now()

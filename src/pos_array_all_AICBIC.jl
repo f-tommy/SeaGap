@@ -3,6 +3,28 @@
 #using LinearAlgebra
 
 export pos_array_all_AICBIC
+"""
+    pos_array_all_AICBIC(r1,r2,r3,lat,XDUCER_DEPTH,NPB; fn1,fn2,fn3,fn4,eps,ITMAX,delta_pos,delete,fno0,fno)
+
+Perform static array positioning and calculate AIC and BIC values for various number of temporal B-spline bases.
+Range for the number of temporal B-spline bases to be investigated is given by (`r1`,`r2`) with interval of `r3`.
+
+* `lat`: Site latitude
+* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `NPB`: Number of temporal B-spline bases
+* `eps`: Convergence threshold (`eps=1.e-4` in default)
+* `IMAX`: Maximum number of iterations (`IMAX=50` in default)
+* `delta_pos`: Infinitesimal amount of the array displacements to calculate the Jacobian matrix (`delta_pos=1.e-4`)
+* `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` in default)
+* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` in default)
+* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` in default)
+* `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` in default)
+* `fno0`: Output file name for logging (`fno0=log.txt` in default)
+* `fno`: Output file name for AIC and BIC values (`fno=AICBIC_search.out`)
+
+# Example
+    pos_array_all_AICBIC(30,150,5,38.1,2.0)
+"""
 function pos_array_all_AICBIC(r1::Int64,r2::Int64,r3::Int64,lat,XDUCER_DEPTH=3.0; eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, delete=false::Bool, fn1="tr-ant.inp"::String, fn2="pxp-ini.xyh"::String, fn3="ss_prof.zv"::String, fn4="obsdata.inp"::String, fno="AICBIC_search.out"::String,fno0="log.txt"::String)
   println(stderr," === GNSS-A positioning: pos_array_all  ===")
   # --- Input check
