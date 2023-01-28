@@ -7,15 +7,15 @@
 export read_info, read_prof, read_ant, read_gps, read_initial, read_jttq, read_pxppos, read_obsdata
 # === Read site info
 """
-    read_info(filename,site)
+    read_info(site,filename)
 
 Read site location data `filename` and return the location for a certain site given by `site`
 `filename` is a text file with (1:Site_name(str), 2:Lon(deg), 3:Lat(deg), 4:Water_depth(m), 5:Total number of transponders(Int)).
 
 # Example
-    lon,lat,dep,numk = read_info("site_info.txt","G20")
+    lon,lat,dep,numk = read_info("G20","site_info.txt")
 """
-function read_info(filename::String,site::String)
+function read_info(site::String,filename="site_info.txt")
   # 1:Site_name(str), 2:Lon(deg), 3:Lat(deg), 4:Water_depth(m), 5:total_number_of_transponders(Int)
   f = open(filename,"r")
   a = readlines(f)
