@@ -46,10 +46,12 @@ include("pos_single.jl")
 include("pos_array_mcmcpvg.jl")
 include("pos_array_mcmcpvgc.jl")
 
-# Original functions for plots
+# Original functions for postprocessing
 include("plot_prof.jl")
 include("plot_track.jl")
 include("plot_array_each.jl")
+include("denoise_each.jl")
+include("position_each.jl")
 include("plot_ttres.jl")
 include("plot_ntd.jl")
 include("plot_AICBIC.jl")

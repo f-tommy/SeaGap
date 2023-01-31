@@ -4,7 +4,24 @@
 =#
 #using DelimitedFiles
 
-export read_info, read_prof, read_ant, read_gps, read_initial, read_jttq, read_pxppos, read_obsdata
+export read_matrix,read_info, read_prof, read_ant, read_gps, read_initial, read_jttq, read_pxppos, read_obsdata
+# === Read matrix
+"""
+    read_matrix(filename)
+
+ Read text data file; then, return its size (`N`*`M`) and matrix (`a`)
+
+# Example
+    N, M, a = read_matrix("site_info.txt")
+
+"""
+function read_matrix(filename::String)
+  a = DelimitedFiles.readdlm(filename)
+  n, m = size(a)
+  println(stderr," --- Read $filename: $n")
+  return n,m,a
+end 
+
 # === Read site info
 """
     read_info(site,filename)

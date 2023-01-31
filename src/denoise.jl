@@ -141,7 +141,7 @@ Calculate travel-time residual, estimate smoothed travel-time residuals by `n` r
 * `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
 * `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
 * `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
-* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` in default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=true` in default)
 * `ms`: Plotted marker size (`ms=6` in default)
 
 * `fno1`: Output text file for travel-time residuals
@@ -150,7 +150,7 @@ Calculate travel-time residual, estimate smoothed travel-time residuals by `n` r
 # Example
     denoise(lat,XDUCER_DEPTH,k=0,n=7,sigma=4.0,method="median")
 """
-function denoise(lat,XDUCER_DEPTH,resrange=(-3,3),resrange2=(-1,1); method="median"::String,autoscale=true::Bool,k=0,n=15,sigma=4.0,save=true::Bool,prompt=true::Bool,fn1="tr-ant.inp"::String, fn2="pxp-ini.xyh"::String, fn3="ss_prof.zv"::String, fn4="obsdata.inp"::String, fn0="obsdata.inp_org"::String, plot_size=(1200,1200),lmargin=6.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=true::Bool, fno1="denoise.out"::String, fno2="denoise.png"::String)
+function denoise(lat,XDUCER_DEPTH,resrange=(-3,3),resrange2=(-1,1); method="median"::String,autoscale=true::Bool,k=0,n=15,sigma=4.0,save=true::Bool,prompt=true::Bool,fn1="tr-ant.inp"::String, fn2="pxp-ini.xyh"::String, fn3="ss_prof.zv"::String, fn4="obsdata.inp"::String, fn0="obsdata.inp_org"::String, plot_size=(1200,1200),lmargin=6.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=true::Bool, fno1="denoise.out"::String, fno2="denoise.png"::String,ms=6::Int64)
   # Calcualte travel-time residuals
   nv,kv,t1,t2,tp,tc,tr,vert = ttres(lat,XDUCER_DEPTH, fn1=fn1, fn2=fn2, fn3=fn3, fn4=fn4)
   dat = hcat(nv,kv,t1,t2,tp,tc,tr,vert)
@@ -168,11 +168,11 @@ function denoise(lat,XDUCER_DEPTH,resrange=(-3,3),resrange2=(-1,1); method="medi
     cp("$fn4","$fn0",force=true)
     println(stderr,"Copy $fn4 -> $fn0")
   end
-  # Median filter
+  # Running filter
   id = zeros(Int64,num)
   open(fno1,"w") do out
   for j in 1:numk
-    println(stderr,"Median filter for Transponder $j")
+    println(stderr,"Running filter for Transponder $j")
     i0 = Vector{Int64}(undef, 0)
     t = Vector{Float64}(undef, 0)
     r = Vector{Float64}(undef, 0)
@@ -216,7 +216,7 @@ function denoise(lat,XDUCER_DEPTH,resrange=(-3,3),resrange2=(-1,1); method="medi
   end
   # Plot
   println(stderr,"Plot denoised time-series")
-  plot_denoise(fno=fno2,fn=fno1, resrange=resrange,resrange2=resrange2,plot_size=plot_size,lmargin=lmargin, rmargin=rmargin, tmargin=tmargin, bmargin=bmargin, show=show) 
+  plot_denoise(fno=fno2,fn=fno1, resrange=resrange,resrange2=resrange2,plot_size=plot_size,lmargin=lmargin, rmargin=rmargin, tmargin=tmargin, bmargin=bmargin, show=show,ms=ms) 
   if prompt == true
     q = Base.prompt("Do you accept the denoise processing? (yes/no)")
     if q == "yes"

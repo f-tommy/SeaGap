@@ -13,7 +13,7 @@ Perform static array positioning with optimizing offset between a GNSS antenna a
 * `XDUCER_DEPTH`: Transducer depth from the sea-surface
 * `NR`: Minimum number of data to perform estimation for each group
 * `eps`: Convergence threshold (`eps=1.e-4` in default)
-* `IMAX`: Maximum number of iterations (`IMAX=20` in default)
+* `ITMAX`: Maximum number of iterations (`ITMAX=20` in default)
 * `delta_pos`: Infinitesimal amount of the array displacements to calculate the Jacobian matrix (`delta_pos=1.e-4`)
 * `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` in default)
 * `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` in default)
