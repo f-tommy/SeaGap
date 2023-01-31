@@ -3,7 +3,7 @@
 
 export position_each
 """
-    position_each(;fn="array_each.out",weight=false,fno="position_each.out")
+    position_each(;fn,weight,fno)
 
 Caclulate simple statistical values for the positioning results of `pos_array_each()`
 

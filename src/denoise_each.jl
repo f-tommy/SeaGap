@@ -107,7 +107,7 @@ function denoise_each(;xrange=(-1,1),yrange=(-1,1),method="median"::String,autos
       ax = mean(x0); ay = mean(y0)
     end
     xv = x0 .- ax; yv = y0 .- ay
-    xr = std(x0); yr = std(y0)
+    xr = std(xv); yr = std(yv)
     x1 = ax - sigma1*xr; x2 = ax + sigma1*xr
     y1 = ay - sigma1*yr; y2 = ay + sigma1*yr
     dat1 = dat[dat[:,3].>x1,:]
