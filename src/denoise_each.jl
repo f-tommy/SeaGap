@@ -54,7 +54,7 @@ function plot_denoise_each(;xrange=(-1,1),yrange=(-1,1), autoscale=true::Bool,fn
 end
 
 """
-    denoise_each(;xrange,yrange,method,autoscale,n,sigma1,sigma2,type,save,prompt,fn,fn0,plot_size,lmargin1,lmargin2,rmargin,tmargin,bmargin,show,fno)
+    denoise_each(;xrange,yrange,method,autoscale,n,sigma1,sigma2,type,save,prompt,fn,fn0,plot_size,lmargin1,lmargin2,rmargin,tmargin,bmargin,show,fno1,fno2)
 
 Eliminate outliers from 
 Calculate travel-time residual, estimate smoothed travel-time residuals by `n` running `method` filter, exclude outliers beyond `sigma` Std, and plot them by `plot_denoise()`. The denoised observational file is rewritten in `fn4`.
@@ -64,7 +64,7 @@ Calculate travel-time residual, estimate smoothed travel-time residuals by `n` r
 * `sigma1`: Outlier threshold for "spatial"
 * `sigma2`: Outlier threshold for "temporal"
 * `type`: "spatial","temporal", or "both" filters are conducted (`type="both"` in default) 
-* `save`: if `save=true`, the original observation data file `fn` is renamed and saved as `fn0` (`save=true` in default)
+* `save`: if `save=true`, the input data file `fn` is renamed and saved as `fn0` (`save=true` in default)
 * `prompt`: if `prompt=true`, confirmation message is shown; if false, the input file is forcely saved (`prompt=true` in default)  
 
 * `fn`: Input data file (`fn="array_each.out"` in default)
