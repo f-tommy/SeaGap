@@ -95,7 +95,7 @@ function plot_time_array_each(EW_range=(-1.5,1.5),NS_range=(-1.5,1.5),ntdrange=(
   if autoscale == true
     p0 = scatter(t,dt,ylabel="NTD [msec]",framestyle=:box,legend = :none,markershape=:cross,bottom_margin=Plots.Measures.Length(:mm,bmargin0),top_margin=Plots.Measures.Length(:mm, tmargin),markersize=ms,label="",xformatter=_->"")
     p1 = scatter(t,x,ylabel="Easting [m]",framestyle=:box,legend = :none,markershape=:cross,bottom_margin=Plots.Measures.Length(:mm,bmargin0),top_margin=Plots.Measures.Length(:mm, 0),markersize=ms,label="",xformatter=_->"")
-    p2 = scatter(t,x,xlabel="Time [hour]",ylabel="Northing [m]",framestyle=:box,legend = :none,markershape=:cross,bottom_margin=Plots.Measures.Length(:mm, bmargin),top_margin=Plots.Measures.Length(:mm, 0),markersize=ms)
+    p2 = scatter(t,y,xlabel="Time [hour]",ylabel="Northing [m]",framestyle=:box,legend = :none,markershape=:cross,bottom_margin=Plots.Measures.Length(:mm, bmargin),top_margin=Plots.Measures.Length(:mm, 0),markersize=ms)
   else
     p0 = scatter(t,dt,ylabel="NTD [msec]",framestyle=:box,legend = :none,ylim=ntdrange,markershape=:cross,bottom_margin=Plots.Measures.Length(:mm,bmargin0),top_margin=Plots.Measures.Length(:mm, tmargin),markersize=ms,label="",xformatter=_->"")
     p1 = scatter(t,x,ylabel="Easting [m]",framestyle=:box,legend = :none,ylim=EW_range,markershape=:cross,bottom_margin=Plots.Measures.Length(:mm,bmargin0),top_margin=Plots.Measures.Length(:mm, 0),markersize=ms,label="",xformatter=_->"")
