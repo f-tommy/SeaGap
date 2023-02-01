@@ -187,8 +187,8 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
   dhod02 = 1/pi*ss/(a0[4]^2+ss^2) + 1/pi*ss/(a0[5]^2+ss^2)
   hod01 = -num/2*log(10^a0[12]) - hod01/(2*(1.e-4)^2*10^a0[12])
   hod02 = -num/2*log(10^a0[13]) - hod02/(2*(1.e-4)^2*10^a0[13])
-  println(stderr,"   RMS; $rms0, $dhod01, $dhod02, PDF1: $hod01, PDF2: $hod02")
-  println(out0,"   RMS; $rms0, $dhod01, $dhod02, PDF1: $hod01, PDF2: $hod02")
+  println(stderr,"   RMS; $rms01, $dhod01, $dhod02, PDF1: $hod01, PDF2: $hod02")
+  println(out0,"   RMS; $rms01, $dhod01, $dhod02, PDF1: $hod01, PDF2: $hod02")
   println(out0,"   Pos; $(a0[1:3])")
   
   # --- Main calculation
