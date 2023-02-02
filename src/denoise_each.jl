@@ -157,7 +157,7 @@ function denoise_each(;xrange=(-1,1),yrange=(-1,1),method="median"::String,autos
     if q == "yes"
       mv("tmp",fn,force=true)
       ne = size(dlist)[1]
-      open(fno2,"w") do out2
+      open(fno2,"a") do out2
         for n in 1:ne
           @printf(out2,"%i\n",dlist[n])
         end
