@@ -19,11 +19,11 @@ Convert a position time-series file `fn` (1: the observation period [sec], 2-4: 
 
 * `vx`, `vy`, `vz`: constant velocities which are eliminated from the time-series (Unit: cm/yr)
 * `redu`: if `redu=true`, the large estimation errors are identified as unusable (estimation errors in EW and NS components > `sredu_hor`; those in UD component > `sredu_ver`); if `redu=false`, all are identified as usable
-* `sredu_hor`: Estimation error limit to be usable for horizontal components (`sredu_hor=30.0` [cm] in default)
-* `sredu_ver`: Estimation error limit to be usable for vertical component (`sredu_ver=30.0` [cm] in default)
-* `fno`: Arranged time-series file (`fno="converted_position.out"` in defalult)
-* `fn`: Input time-series file (`fn="position_merge.out"` in defalult)
-* `t0`: Reference time (`t0="2000-01-01T12:00:00"` in default; refer Date & Time processing [e.g., `sec2year()`])
+* `sredu_hor`: Estimation error limit to be usable for horizontal components (`sredu_hor=30.0` [cm] by default)
+* `sredu_ver`: Estimation error limit to be usable for vertical component (`sredu_ver=30.0` [cm] by default)
+* `fno`: Arranged time-series file (`fno="converted_position.out"` by defalult)
+* `fn`: Input time-series file (`fn="position_merge.out"` by defalult)
+* `t0`: Reference time (`t0="2000-01-01T12:00:00"` by default; refer Date & Time processing [e.g., `sec2year()`])
 
 # Example
     convert_displacement(1.79,-1.79,0.0,sredu_hor=30.0,sredu_ver=30.0,fno="converted_position.out")

@@ -9,21 +9,21 @@ export plot_denoise_each, denoise_each
 
 Make a figure of `fno` from the `denoise()` output file.
 
-* `xrange`: EW range for the array positions [m] (`xrange=(-1,1)` in default)
-* `yrange`: NS range for the array positions [m] (`yrange=(-1,1)` in default)
-* `autoscale`: if `autoscale=true`, the EW and NS ranges are automatically determined; if `autoscale=false`, the EW and NS ranges are fixed to `xrange` and `yrange` (`autoscale=true` in default)
-* `plot_size`: Figure size (`plot_size=(900,600)` in default)
-* `fn1`: Input file name (`fn="array_each.out"` in defualt)
-* `fn2`: Input file name after denoise (`fn="tmp"` in defualt)
-* `fno`: Output file name (`fno="denoise_each.pdf"` in defualt)
-* `lmargin1`: Plot margin for the left edge for map (`lmargin=4.0` in default)
-* `lmargin2`: Plot margin for the left edge for time-series (`lmargin=3.0` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=3.0` in default)
-* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` in default)
-* `ms1`: Plotted marker size for map (`ms1=5` in default)
-* `ms2`: Plotted marker size for time-series (`ms2=4` in default)
+* `xrange`: EW range for the array positions [m] (`xrange=(-1,1)` by default)
+* `yrange`: NS range for the array positions [m] (`yrange=(-1,1)` by default)
+* `autoscale`: if `autoscale=true`, the EW and NS ranges are automatically determined; if `autoscale=false`, the EW and NS ranges are fixed to `xrange` and `yrange` (`autoscale=true` by default)
+* `plot_size`: Figure size (`plot_size=(900,600)` by default)
+* `fn1`: Input file name (`fn="array_each.out"` by defualt)
+* `fn2`: Input file name after denoise (`fn="tmp"` by defualt)
+* `fno`: Output file name (`fno="denoise_each.pdf"` by defualt)
+* `lmargin1`: Plot margin for the left edge for map (`lmargin=4.0` by default)
+* `lmargin2`: Plot margin for the left edge for time-series (`lmargin=3.0` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=3.0` by default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` by default)
+* `ms1`: Plotted marker size for map (`ms1=5` by default)
+* `ms2`: Plotted marker size for time-series (`ms2=4` by default)
 """
 function plot_denoise_each(;xrange=(-1,1),yrange=(-1,1), autoscale=true::Bool,fno="denoise_each.pdf"::String,fn1="array_each.out"::String,fn2="tmp",plot_size=(900,600),lmargin1=4.0,lmargin2=4.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=false::Bool, ms1=5::Int64,ms2=4::Int64)
   n, m, dat01 = read_matrix(fn1)
@@ -59,28 +59,28 @@ end
 Eliminate outliers from 
 Calculate travel-time residual, estimate smoothed travel-time residuals by `n` running `method` filter, exclude outliers beyond `sigma` Std, and plot them by `plot_denoise()`. The denoised observational file is rewritten in `fn4`.
 
-* `method`: Method of running filter ("mean" or "method"; `method="median"` in default)
+* `method`: Method of running filter ("mean" or "method"; `method="median"` by default)
 * `n`: Window size for the running filter
 * `sigma1`: Outlier threshold for "spatial"
 * `sigma2`: Outlier threshold for "temporal"
-* `type`: "spatial","temporal", or "both" filters are conducted (`type="both"` in default) 
-* `save`: if `save=true`, the input data file `fn` is renamed and saved as `fn0` (`save=true` in default)
-* `prompt`: if `prompt=true`, confirmation message is shown; if false, the input file is forcely saved (`prompt=true` in default)  
+* `type`: "spatial","temporal", or "both" filters are conducted (`type="both"` by default) 
+* `save`: if `save=true`, the input data file `fn` is renamed and saved as `fn0` (`save=true` by default)
+* `prompt`: if `prompt=true`, confirmation message is shown; if false, the input file is forcely saved (`prompt=true` by default)  
 
-* `fn`: Input data file (`fn="array_each.out"` in default)
-* `fn0`: if `save=true`, `fn` is saved (`fn0="array_each.out_org"` in default)
-* `xrange`: EW range for the array positions [m] (`xrange=(-1,1)` in default)
-* `yrange`: NS range for the array positions [m] (`yrange=(-1,1)` in default)
-* `autoscale`: if `autoscale=true`, the vertical ranges are automatically determined; if `autoscale=false`, the EW and NS ranges are fixed to `xrange` and `yrange` (`autoscale=true` in default)
-* `plot_size`: Figure size (`plot_size=(900,600)` in default)
-* `lmargin1`: Plot margin for the left edge of map (`lmargin=4.0` in default)
-* `lmargin2`: Plot margin for the left edge of time-series (`lmargin=3.0` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=3.0` in default)
-* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=true` in default)
-* `ms1`: Plotted marker size for map (`ms1=5` in default)
-* `ms2`: Plotted marker size for time-series (`ms2=4` in default)
+* `fn`: Input data file (`fn="array_each.out"` by default)
+* `fn0`: if `save=true`, `fn` is saved (`fn0="array_each.out_org"` by default)
+* `xrange`: EW range for the array positions [m] (`xrange=(-1,1)` by default)
+* `yrange`: NS range for the array positions [m] (`yrange=(-1,1)` by default)
+* `autoscale`: if `autoscale=true`, the vertical ranges are automatically determined; if `autoscale=false`, the EW and NS ranges are fixed to `xrange` and `yrange` (`autoscale=true` by default)
+* `plot_size`: Figure size (`plot_size=(900,600)` by default)
+* `lmargin1`: Plot margin for the left edge of map (`lmargin=4.0` by default)
+* `lmargin2`: Plot margin for the left edge of time-series (`lmargin=3.0` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=3.0` by default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=true` by default)
+* `ms1`: Plotted marker size for map (`ms1=5` by default)
+* `ms2`: Plotted marker size for time-series (`ms2=4` by default)
 
 * `fno1`: Output figure name
 * `fno2`: Output text file for the elimited data list

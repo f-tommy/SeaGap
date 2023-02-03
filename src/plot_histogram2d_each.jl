@@ -10,15 +10,15 @@ Make a figure of a heatmap for certain two parameters (`param1` and `param2`) fr
 
 * `param1`: Parameter name 1
 * `param2`: Parameter name 2
-* `fn`: Input file name (`fn="sample.out"` in default)
-* `fno`: Output figure name (`fno="histogram2d_each.pdf"` in default)
-* `plot_size`: Figure size (`plot_size=(650,600)` in default)
-* `lmargin`: Plot margin for the left edge (`lmargin=1.5` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.5` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=0.5` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=0.5` in default)
-* `show`: if `show=true`, a figure is temporally shown; if false, the figure is saved as `fno` (`show=false` in default)
-* nbins: Number of histogram's intervals (`nbins=50` in default)
+* `fn`: Input file name (`fn="sample.out"` by default)
+* `fno`: Output figure name (`fno="histogram2d_each.pdf"` by default)
+* `plot_size`: Figure size (`plot_size=(650,600)` by default)
+* `lmargin`: Plot margin for the left edge (`lmargin=1.5` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.5` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=0.5` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=0.5` by default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is saved as `fno` (`show=false` by default)
+* nbins: Number of histogram's intervals (`nbins=50` by default)
 
 # Example
     plot_histogram2d_each("UD_disp.","S-NTD_10",fno="histogram2d_UD_SNTD-10.png")

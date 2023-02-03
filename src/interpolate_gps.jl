@@ -18,7 +18,7 @@ Iterpolate GNSS position and attitude when an acoustic signal is transmitted fro
 * `tt0`: Travel-time [sec] (`tp0`+`tt0`->an acoustic signal is arrived: `numk` size of vector)
 * `nump`: Number of data for `t0`...`r0`
 * `numk`: Number of transponders for `tp0` and `tt0`
-* `ks`: Degree of spline function for interpoaltion (`ks=3` in default)
+* `ks`: Degree of spline function for interpoaltion (`ks=3` by default)
 
 # Example
     xd0,yd0,zd0,hd0,pd0,rd0,xd1,yd1,zd1,hd1,pd1,rd1,tp1 = interpolate_gps(t0,x0,y0,z0,h0,p0,r0,tp0,tt0,nump)

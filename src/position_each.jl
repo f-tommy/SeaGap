@@ -7,9 +7,9 @@ export position_each
 
 Caclulate simple statistical values for the positioning results of `pos_array_each()`
 
-* `fn`: Input file (`fn="array_each.out"` in default)
+* `fn`: Input file (`fn="array_each.out"` by default)
 * `fno`: Output file with the format (1: Mean time [sec], 2: Mean EW position [m], 3: Mean NS position [m], 4: UD position [m](Not Available), 5: Std of EW position [m], 6: Std of NS position [m], Std of UD position [m](Not Available); the default is `fno="position_each.out"`. 
-* `weight`: If `weight=true`, weighted mean position is calculated using the shot groups with number of shot data for each group >= 4 (`weight=false` in default).
+* `weight`: If `weight=true`, weighted mean position is calculated using the shot groups with number of shot data for each group >= 4 (`weight=false` by default).
 
 # Example
   position_each(weight=true)

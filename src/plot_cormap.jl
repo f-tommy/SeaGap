@@ -12,19 +12,19 @@ export plot_cormap
 
 Make a figure correlation coefficient map from the sampling results of `pos_array_mcmcpvg()`.
 
-* `txt`: if `txt=true`, text data file of correlation coefficients is saved (`txt=false` in default)
+* `txt`: if `txt=true`, text data file of correlation coefficients is saved (`txt=false` by default)
 * `all`: if `all=true`, correlation coefficients are calculated for all parameters; if `all=false`, correlation coefficients are calculated for major paramters
-* `fn`: the input file name (`fn="sample.out"` in default)
-* `fno0`: the output text file name (`fno0="correlation.out"` in default)
-* `fno`: the output figure file name (`fno="cormap.pdf"` in default)
-* `as`: Tick (parameter name) fontsize (`ts=10` in default)
-* `pfs`: Annotation (correlation coefficients) fontsize (i`pfs=8` in default)
-* `plot_size`: Figure size (`plot_size=(600,600)` in default)
-* `lmargin`: Plot margin for the left edge (`lmargin=0.5` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=4.0` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=0.5` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=0.5` in default)
-* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` in default)
+* `fn`: the input file name (`fn="sample.out"` by default)
+* `fno0`: the output text file name (`fno0="correlation.out"` by default)
+* `fno`: the output figure file name (`fno="cormap.pdf"` by default)
+* `as`: Tick (parameter name) fontsize (`ts=10` by default)
+* `pfs`: Annotation (correlation coefficients) fontsize (i`pfs=8` by default)
+* `plot_size`: Figure size (`plot_size=(600,600)` by default)
+* `lmargin`: Plot margin for the left edge (`lmargin=0.5` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=4.0` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=0.5` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=0.5` by default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` by default)
 
 # Example
     plot_cormap(type="all",NPB=41,as=5,fno="cormap_all.pdf")

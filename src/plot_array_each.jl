@@ -10,16 +10,16 @@ Make a figure plotting the estimated array displacements obtained by `pos_array_
 
 * `xrange` and `yrange`: EW and NS ranges for plot [m]
 * `autoscale`: If `autoscale=true` (default), the plot range is automatically determined. If `autoscale=false`, the plot range is fixed by `xrange` and `yrange`.
-* `fn`: Input file name (`fn="array_each.out"` in default)
-* `fno`: Output figure name (`fno="map_array_each.pdf"` in default)
-* `plot_size`: Figure size (`plot_size=(600,500)` in default)
-* `lmargin`: Plot margin for the left edge (`lmargin=2.5` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
-* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` in default)
-* `ms`: Plotted marker size (`ms=5` in default)
-* `gfs`: Fontsize for label (gudefontsize: `gfs=12` in default)
+* `fn`: Input file name (`fn="array_each.out"` by default)
+* `fno`: Output figure name (`fno="map_array_each.pdf"` by default)
+* `plot_size`: Figure size (`plot_size=(600,500)` by default)
+* `lmargin`: Plot margin for the left edge (`lmargin=2.5` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` by default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` by default)
+* `ms`: Plotted marker size (`ms=5` by default)
+* `gfs`: Fontsize for label (gudefontsize: `gfs=12` by default)
 * `col_num`: If `col_num=1` (default), the plot is colored by the observation time. If `col_num=2`, the plot is colored by number of the used observational data. If `col_num=0`, the plot is colored by blue.
 
 # Example
@@ -68,17 +68,17 @@ Make a figure plotting the estimated array displacements obtained by `pos_array_
 
 * `EW_range`, `NS_range`, and `ntdrange`: Plot range of Y-sxis for EW [m], NS [m], and NTD [ms] components
 * `autoscale`: If `autoscale=true` (default), the plot range is automatically determined. If `autoscale=false`, the plot range of Y-axis is fixed by `EW_range`, `NS_range`, and `ntdrange`.
-* `fn`: Input file name (`fn="array_each.out"` in default)
-* `fno`: Output figure name (`fno="time_array_each.pdf"` in default)
-* `plot_size`: Figure size (`plot_size=(600,800)` in default)
-* `lmargin`: Plot margin for the left edge (`lmargin=3.5` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
-* `bmargin0`: Plot margin for the bottom edges of upper two panels (`bmargin0=-4.0` in default)
-* `show`: if `show=true`, a figure is temporally shown; if false, the figure is saved as `fno` (`show=false` in default)
-* `ms`: Plotted marker size (`ms=6` in default)
-* `gfs`: Fontsize for label (gudefontsize: `gfs=12` in default)
+* `fn`: Input file name (`fn="array_each.out"` by default)
+* `fno`: Output figure name (`fno="time_array_each.pdf"` by default)
+* `plot_size`: Figure size (`plot_size=(600,800)` by default)
+* `lmargin`: Plot margin for the left edge (`lmargin=3.5` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` by default)
+* `bmargin0`: Plot margin for the bottom edges of upper two panels (`bmargin0=-4.0` by default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is saved as `fno` (`show=false` by default)
+* `ms`: Plotted marker size (`ms=6` by default)
+* `gfs`: Fontsize for label (gudefontsize: `gfs=12` by default)
 
 # Example
     SeaGap.plot_time_array_each(show=true)

@@ -9,15 +9,15 @@ Make a figure of travel-time residuals obtained by `ttres()`
 
 * `resrange`: Plot range of Y-sxis
 * `autoscale`: If `autoscale=true` (default), the plot range is automatically determined. If `autoscale=false`, the plot range of Y-axis is fixed by `resrange`.
-* `fn`: Input file name (`fn="ttres.out"` in default)
-* `fno`: Output figure name (`fno="ttres.pdf"` in default)
-* `plot_size`: Figure size (`plot_size=(650,1200)` in default)
-* `lmargin`: Plot margin for the left edge (`lmargin=6.0` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
-* `show`: if `show=true`, a figure is temporally shown; if false, the figure is saved as `fno` (`show=false` in default)
-* `ms`: Plotted marker size (`ms=7` in default)
+* `fn`: Input file name (`fn="ttres.out"` by default)
+* `fno`: Output figure name (`fno="ttres.pdf"` by default)
+* `plot_size`: Figure size (`plot_size=(650,1200)` by default)
+* `lmargin`: Plot margin for the left edge (`lmargin=6.0` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` by default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is saved as `fno` (`show=false` by default)
+* `ms`: Plotted marker size (`ms=7` by default)
 
 # Example
 

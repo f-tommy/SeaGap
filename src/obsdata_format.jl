@@ -9,10 +9,10 @@ Make observational data file `fno` from GNSS antenna position time-series with a
 
 * `numk`: Number of seafloor tranponders at a site
 * `fn0`: Log file name
-* `fno`: Output file name (`fno="obsdata.inp"` in default)
-* `fn1`: File name for GNSS antenna position time-series with attitude (`fn1=gps.jxyhhpr` in default)
-* `fn21` and `fn22`: File names for travel-time time-series file (`fn21="pxp-"` and `fn22=".jttq"` in default; if default names with 3 tranponders, "pxp-1.jttq", "pxp-2.jttq", and "pxp-3.jttq" must be prepared)
-* `maxp`: Maximum number for readable shots (`maxp=50000` in default; if you have shot data > 50000, you have to provide larger value for `maxp`)
+* `fno`: Output file name (`fno="obsdata.inp"` by default)
+* `fn1`: File name for GNSS antenna position time-series with attitude (`fn1=gps.jxyhhpr` by default)
+* `fn21` and `fn22`: File names for travel-time time-series file (`fn21="pxp-"` and `fn22=".jttq"` by default; if default names with 3 tranponders, "pxp-1.jttq", "pxp-2.jttq", and "pxp-3.jttq" must be prepared)
+* `maxp`: Maximum number for readable shots (`maxp=50000` by default; if you have shot data > 50000, you have to provide larger value for `maxp`)
 
 # Example
     obsdata_format(4)

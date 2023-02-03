@@ -9,20 +9,20 @@ export plot_mcmcparam
 
 Make a figure of the unknown parameters change through the MCMC iteration using the results of `pos_array_mcmcpvg()` and `pos_array_mcmcpvgc()`.
 
-* `NA`: Sampling interval of the MCMC prcessing (`NA=5` in default), which must be same with `NA` in `pos_array_mcmcpvg`
-* `fn`: the input file name (`fn="sample.out"` in default)
-* `fno`: Output figure name (`fno="mcmc_param.pdf"` in default)
-* `show`: if `show=true`, a figure is shown on REPL and is not saved as a file (`show=false` in default)
-* `nshuffle`: number of plots for each parameter (if all samples are plotted, the figure is crowded; thus, `nshuffle` of samples are randomly picked; if `nshuffle=0`, all samples are plotted; `nshuffle=10000` in default)
-* `plot_size`: Figure size (`plot_size=(500,800)` in default)
-* `lmargin`: Plot margin for the left edge (`lmargin=6.0` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
-* `bmargin0`: Plot margin for the bottom edges of upper two panels (`bmargin0=-2.0` in default)
-* `ms`: Plotted marker size (`ms=2` in default)
-* `lfs`: Label fontsize (`lfs=5` in default)
-* `tfs`: Tick fontsize (`tfs=5` in default)
+* `NA`: Sampling interval of the MCMC prcessing (`NA=5` by default), which must be same with `NA` in `pos_array_mcmcpvg`
+* `fn`: the input file name (`fn="sample.out"` by default)
+* `fno`: Output figure name (`fno="mcmc_param.pdf"` by default)
+* `show`: if `show=true`, a figure is shown on REPL and is not saved as a file (`show=false` by default)
+* `nshuffle`: number of plots for each parameter (if all samples are plotted, the figure is crowded; thus, `nshuffle` of samples are randomly picked; if `nshuffle=0`, all samples are plotted; `nshuffle=10000` by default)
+* `plot_size`: Figure size (`plot_size=(500,800)` by default)
+* `lmargin`: Plot margin for the left edge (`lmargin=6.0` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` by default)
+* `bmargin0`: Plot margin for the bottom edges of upper two panels (`bmargin0=-2.0` by default)
+* `ms`: Plotted marker size (`ms=2` by default)
+* `lfs`: Label fontsize (`lfs=5` by default)
+* `tfs`: Tick fontsize (`tfs=5` by default)
 
 # Example
     plot_mcmcparam(5,fno="mcmc_param.pdf")

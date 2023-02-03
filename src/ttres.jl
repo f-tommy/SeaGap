@@ -12,12 +12,12 @@ Input:
 * `lat`: Site latitude
 * `XDUCER_DEPTH`: Transducer depth from the sea-surface
 * `NPB`: Number of temporal B-spline bases
-* `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` in default)
-* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` in default)
-* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` in default)
-* `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` in default)
-* `fno0`: Output file name for logging  (`fno0=log.txt` in default)
-* `fno`: Output file name for the travel-time residuals (`fno=ttres.out` in default)
+* `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` by default)
+* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` by default)
+* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` by default)
+* `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` by default)
+* `fno0`: Output file name for logging  (`fno0=log.txt` by default)
+* `fno`: Output file name for the travel-time residuals (`fno=ttres.out` by default)
 * `save`: if `save=true`, calculation results are saved in `fno`
 
 Output:

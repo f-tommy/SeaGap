@@ -7,14 +7,14 @@ export plot_prof
 
 Make a figure of a sound speed profile.
 
-* `fn`: Input file of a sound speed profile (`fn="ss_prof.zv"` in default)
-* `fno`: Output figure name (`fno="ss_prof.pdf"` in default)
-* `plot_size`: Figure size (`plot_size=(450,600)` in default)
-* `show`: if `show=true`, a figure is shown on REPL and is not saved as a file (`show=false` in default)
-* `lmargin`: Plot margin for the left edge (`lmargin=2.5` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
+* `fn`: Input file of a sound speed profile (`fn="ss_prof.zv"` by default)
+* `fno`: Output figure name (`fno="ss_prof.pdf"` by default)
+* `plot_size`: Figure size (`plot_size=(450,600)` by default)
+* `show`: if `show=true`, a figure is shown on REPL and is not saved as a file (`show=false` by default)
+* `lmargin`: Plot margin for the left edge (`lmargin=2.5` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` by default)
 
 # Example
     plot_prof(fno="ss_prof.png",fn="ss_prof.zv",show=false)

@@ -101,7 +101,7 @@ end
     date2sec(t,t0)
 
 String type date `t` is converted into cumulative seconds `sec` from `t0`.
-`t0` is set to "2000-01-01T12:00:00" in default.
+`t0` is set to "2000-01-01T12:00:00" by default.
 
 # Example
     sec = date2sec("2020-10-10T00:10:21")
@@ -124,7 +124,7 @@ end
     date2sec_txt(fn0,fn,t0)                                                                 
 
 Read text file `fn0`(file name), convert date at 1st column into cumulative seconds from `t0`, and write `fn` as an output file.
-`t0` is set to "2000-01-01T12:00:00" in default.
+`t0` is set to "2000-01-01T12:00:00" by default.
 
 # Example
     date2sec_txt(fn0,fn)
@@ -156,8 +156,8 @@ end
     sec2date(j,t0; digits)
 
 Cumulative seconds `j` from `t0` is converted into `date`.
-`t0` is set to "2000-01-01T12:00:00" in default.
-`digits` is the digits of seconds; 6 in default.
+`t0` is set to "2000-01-01T12:00:00" by default.
+`digits` is the digits of seconds; 6 by default.
 
 # Example
    date  = sec2date(12345.678)
@@ -177,8 +177,8 @@ end
     sec2date_txt(fn0,fn,t0; digits)
 
 Read text file `fn0`(file name), convert cumulative seconds at 1st column into date, and write `fn` as an output file.
-`t0` is set to "2000-01-01T12:00:00" in default.
-`digits` is the digits of seconds; 6 in default.
+`t0` is set to "2000-01-01T12:00:00" by default.
+`digits` is the digits of seconds; 6 by default.
 
 # Example
     sec2date_txt(fn0,fn)
@@ -209,7 +209,7 @@ end
     sec2year(j,t0)
 
 Cumulative seconds `j` from `t0` is converted into `year`.
-`t0` is set to "2000-01-01T12:00:00" in default.
+`t0` is set to "2000-01-01T12:00:00" by default.
 
 # Example
    year  = sec2year(12345.678)
@@ -231,7 +231,7 @@ end
     sec2year_txt(fn0,fn,t0)
 
 Read text file `fn0`(file name), convert cumulative seconds at 1st column into year, and write `fn` as an output file.
-`t0` is set to "2000-01-01T12:00:00" in default.
+`t0` is set to "2000-01-01T12:00:00" by default.
 
 # Example
     sec2year_txt(fn0,fn)

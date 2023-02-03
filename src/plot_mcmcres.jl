@@ -9,19 +9,19 @@ export plot_mcmcres
 
 Make a figure of the posterior PDF and the travel-time RMS changes through the MCMC iteration using the results of `pos_array_mcmcpvg()` and `pos_array_mcmcpvgc()`.
 
-* `fn`: the input file name (`fn="mcmc.out"` in default)
-* `fno`: Output figure name (`fno="mcmc_res.pdf"` in default)
-* `show`: if `show=true`, a figure is shown on REPL and is not saved as a file (`show=false` in default)
-* `nshuffle`: number of plots (if all samples are plotted, the figure is crowded; thus, `nshuffle` of samples are randomly picked; if `nshuffle=0`, all samples are plotted; `nshuffle=50000` in default)
-* `plot_size`: Figure size (`plot_size=(600,800)` in default)
-* `lmargin`: Plot margin for the left edge (`lmargin=3.0` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
-* `bmargin0`: Plot margin for the bottom edges of upper two panels (`bmargin0=-1.0` in default)
-* `ms`: Plotted marker size (`ms=3` in default)
-* `lfs`: Label fontsize (`lfs=10` in default)
-* `tfs`: Tick fontsize (`tfs=6` in default)
+* `fn`: the input file name (`fn="mcmc.out"` by default)
+* `fno`: Output figure name (`fno="mcmc_res.pdf"` by default)
+* `show`: if `show=true`, a figure is shown on REPL and is not saved as a file (`show=false` by default)
+* `nshuffle`: number of plots (if all samples are plotted, the figure is crowded; thus, `nshuffle` of samples are randomly picked; if `nshuffle=0`, all samples are plotted; `nshuffle=50000` by default)
+* `plot_size`: Figure size (`plot_size=(600,800)` by default)
+* `lmargin`: Plot margin for the left edge (`lmargin=3.0` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` by default)
+* `bmargin0`: Plot margin for the bottom edges of upper two panels (`bmargin0=-1.0` by default)
+* `ms`: Plotted marker size (`ms=3` by default)
+* `lfs`: Label fontsize (`lfs=10` by default)
+* `tfs`: Tick fontsize (`tfs=6` by default)
 
 # Example
     plot_mcmcres(fno="mcmc_res.pdf")

@@ -12,16 +12,16 @@ Perform static array positioning with optimizing offset between a GNSS antenna a
 * `lat`: Site latitude
 * `XDUCER_DEPTH`: Transducer depth from the sea-surface
 * `NR`: Minimum number of data to perform estimation for each group
-* `eps`: Convergence threshold (`eps=1.e-4` in default)
-* `ITMAX`: Maximum number of iterations (`ITMAX=20` in default)
+* `eps`: Convergence threshold (`eps=1.e-4` by default)
+* `ITMAX`: Maximum number of iterations (`ITMAX=20` by default)
 * `delta_pos`: Infinitesimal amount of the array displacements to calculate the Jacobian matrix (`delta_pos=1.e-4`)
-* `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` in default)
-* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` in default)
-* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` in default)
-* `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` in default)
-* `fno0`: Output file name for logging  (`fno0=log.txt` in default)
-* `fno1`: Output file name for the ipositioning results (`fno1=array_each.out` in default)
-* `fno2`: Output file name for the travel-time residuals (`fno2=residual_each.out` in default)
+* `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` by default)
+* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` by default)
+* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` by default)
+* `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` by default)
+* `fno0`: Output file name for logging  (`fno0=log.txt` by default)
+* `fno1`: Output file name for the ipositioning results (`fno1=array_each.out` by default)
+* `fno2`: Output file name for the travel-time residuals (`fno2=residual_each.out` by default)
 
 # Example
     pos_array_each(42.0,4.0)

@@ -14,17 +14,17 @@ export plot_histogram
 Make a figure file of histograms from the sampling results obtained by `pos_array_mcmcpvg()` or `pos_array_mcmcpvgc()`.
 
 * `NPB`: Number of 3d B-spline bases
-* `fn0`: Inversion results by `pos_array_all()` ("solve.out" in default), which is used when you'd like to plot the `pos_array_all()` results on the histogram
-* `fn`: Input file ("sample.out" in default)
-* `fno`: Output figure name (note that this file must be a PDF file: "histogram.pdf" in default)
-* `all`: if `all=true`, histograms for all parameters are drawn; if `all=false`, histograms for major six parameters (array displacements, shallow gradients, gradient depth) (`all=false` in default)
-* `drawnls`: if `drawnls=true`, a normal distribution estimated by `pos_array_all()` is drawn in a histogram (`drawnls=false` in default); the normal distributions are shown for the array displacements and 3d B-spline NTDs
-* `nbins`: Number of histogram's intervals (`nbins=50` in default)
-* `plot_size`: Figure size (`plot_size=(650,500)` in default)
-* `lmargin`: Plot margin for the left edge (`lmargin=1.5` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.5` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
+* `fn0`: Inversion results by `pos_array_all()` ("solve.out" by default), which is used when you'd like to plot the `pos_array_all()` results on the histogram
+* `fn`: Input file ("sample.out" by default)
+* `fno`: Output figure name (note that this file must be a PDF file: "histogram.pdf" by default)
+* `all`: if `all=true`, histograms for all parameters are drawn; if `all=false`, histograms for major six parameters (array displacements, shallow gradients, gradient depth) (`all=false` by default)
+* `drawnls`: if `drawnls=true`, a normal distribution estimated by `pos_array_all()` is drawn in a histogram (`drawnls=false` by default); the normal distributions are shown for the array displacements and 3d B-spline NTDs
+* `nbins`: Number of histogram's intervals (`nbins=50` by default)
+* `plot_size`: Figure size (`plot_size=(650,500)` by default)
+* `lmargin`: Plot margin for the left edge (`lmargin=1.5` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.5` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` by default)
 
 # Example
     plot_histogram(77,all=true,fno="histogram_all.pdf")

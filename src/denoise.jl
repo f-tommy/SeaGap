@@ -9,18 +9,18 @@ export plot_denoise, denoise
 
 Make a figure of `fno` from the `denoise()` output file.
 
-* `resrange`: Vertical range for the vertically-projected travel-time residual [ms] (with NTD) (`resrange=(-3,3)` in default)
-* `resrange2`: Vertical range for the vertically-projected travel-time residual [ms] (excluding NTD) (`resrange2=(-1,1)` in default)
-* `autoscale`: if `autoscale=true`, the vertical ranges are automatically determined; if `autoscale=false`, the vertical ranges are fixed to `resrange` and `resrange2` (`autoscale=true` in default)
-* `plot_size`: Figure size (`plot_size=(1200,1200)` in default)
-* `fn`: Input file name (`fn="denoise.out"` in defualt)
-* `fno`: Output file name (`fno="denoise.png"` in defualt)
-* `lmargin`: Plot margin for the left edge (`lmargin=6.0` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
-* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` in default)
-* `ms`: Plotted marker size (`ms=6` in default)
+* `resrange`: Vertical range for the vertically-projected travel-time residual [ms] (with NTD) (`resrange=(-3,3)` by default)
+* `resrange2`: Vertical range for the vertically-projected travel-time residual [ms] (excluding NTD) (`resrange2=(-1,1)` by default)
+* `autoscale`: if `autoscale=true`, the vertical ranges are automatically determined; if `autoscale=false`, the vertical ranges are fixed to `resrange` and `resrange2` (`autoscale=true` by default)
+* `plot_size`: Figure size (`plot_size=(1200,1200)` by default)
+* `fn`: Input file name (`fn="denoise.out"` by defualt)
+* `fno`: Output file name (`fno="denoise.png"` by defualt)
+* `lmargin`: Plot margin for the left edge (`lmargin=6.0` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` by default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` by default)
+* `ms`: Plotted marker size (`ms=6` by default)
 """
 function plot_denoise(;resrange=(-3,3),resrange2=(-1,1), autoscale=true::Bool,fno="denoise.png"::String,fn="denoise.out"::String, plot_size=(1200,1200),lmargin=6.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=false::Bool, ms=6::Int64)
   dat0 = DelimitedFiles.readdlm(fn)
@@ -120,29 +120,29 @@ Calculate travel-time residual, estimate smoothed travel-time residuals by `n` r
 
 * `lat`: Site latitude
 * `XDUCER_DEPTH`: Transducer depth from the sea-surface
-* `method`: Method of running filter ("mean" or "method"; `method="median"` in default)
+* `method`: Method of running filter ("mean" or "method"; `method="median"` by default)
 * `k`: if `k=0`, `denoise()` is performed for all transponders; if `k` >= 1, `denoise()` is performed for the `k`th transponder. 
 * `n`: Window size for the running filter
 * `sigma`: Outlier threshold
-* `save`: if `save=true`, the original observation data file `fn4` is renamed and saved as `fn0` (`save=true` in default)
-* `prompt`: if `prompt=true`, confirmation message is shown; if false, the denoised observation file is forcely saved (`prompt=true` in default)  
+* `save`: if `save=true`, the original observation data file `fn4` is renamed and saved as `fn0` (`save=true` by default)
+* `prompt`: if `prompt=true`, confirmation message is shown; if false, the denoised observation file is forcely saved (`prompt=true` by default)  
 
-* `fn1`: GNSS antenna-transducer offset (`fn1="tr-ant.inp"` in default)
-* `fn2`: Initial transponders position (`fn2="pxp-ini.xyh"` in default)
-* `fn3`: Initial sound speed structure (`fn3="ss_prof.zv"` in default)
-* `fn4`: Observational file (`fn4="obsdata.inp"` in default)
-* `fn0`: if `save=true`, `fn4` is saved (`fn0="obsdata.inp_org"` in default)
+* `fn1`: GNSS antenna-transducer offset (`fn1="tr-ant.inp"` by default)
+* `fn2`: Initial transponders position (`fn2="pxp-ini.xyh"` by default)
+* `fn3`: Initial sound speed structure (`fn3="ss_prof.zv"` by default)
+* `fn4`: Observational file (`fn4="obsdata.inp"` by default)
+* `fn0`: if `save=true`, `fn4` is saved (`fn0="obsdata.inp_org"` by default)
 
-* `resrange`: Vertical range for the vertically-projected travel-time residual [ms] (with NTD) (`resrange=(-3,3)` in default)
-* `resrange2`: Vertical range for the vertically-projected travel-time residual [ms] (excluding NTD) (`resrange2=(-1,1)` in default)
-* `autoscale`: if `autoscale=true`, the vertical ranges are automatically determined; if `autoscale=false`, the vertical ranges are fixed to `resrange` and `resrange2` (`autoscale=true` in default)
-* `plot_size`: Figure size (`plot_size=(1200,1200)` in default)
-* `lmargin`: Plot margin for the left edge (`lmargin=6.0` in default)
-* `rmargin`: Plot margin for the right edge (`rmargin=1.0` in default)
-* `tmargin`: Plot margin for the top edge (`tmargin=1.0` in default)
-* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` in default)
-* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=true` in default)
-* `ms`: Plotted marker size (`ms=6` in default)
+* `resrange`: Vertical range for the vertically-projected travel-time residual [ms] (with NTD) (`resrange=(-3,3)` by default)
+* `resrange2`: Vertical range for the vertically-projected travel-time residual [ms] (excluding NTD) (`resrange2=(-1,1)` by default)
+* `autoscale`: if `autoscale=true`, the vertical ranges are automatically determined; if `autoscale=false`, the vertical ranges are fixed to `resrange` and `resrange2` (`autoscale=true` by default)
+* `plot_size`: Figure size (`plot_size=(1200,1200)` by default)
+* `lmargin`: Plot margin for the left edge (`lmargin=6.0` by default)
+* `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
+* `tmargin`: Plot margin for the top edge (`tmargin=1.0` by default)
+* `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` by default)
+* `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=true` by default)
+* `ms`: Plotted marker size (`ms=6` by default)
 
 * `fno1`: Output text file for travel-time residuals
 * `fno2`: Output figure name
