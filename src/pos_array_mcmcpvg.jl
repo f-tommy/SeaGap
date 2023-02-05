@@ -17,7 +17,7 @@
 
 export pos_array_mcmcpvg
 """
-    pos_array_mcmcpvg(lat,XDUCER_DEPTH,NPB; fn1,fn2,fn3,fn4,nloop,nburn,NA,scalentd,delta_scale,fno0,fno1,fno2,fno3,fno4,fno5,fno6.fno7)
+    pos_array_mcmcpvg(lat,XDUCER_DEPTH,NPB; fn1,fn2,fn3,fn4,NSB,nloop,nburn,NA,scalentd,delta_scale,fno0,fno1,fno2,fno3,fno4,fno5,fno6.fno7)
 
 Perform MCMC-based static array positioning considering a sloping sound speed structure with a fixed number of temporal B-spline bases.
 
@@ -29,6 +29,7 @@ Perform MCMC-based static array positioning considering a sloping sound speed st
 * `NA`: Number of the sampling interval (`NA=5` by default; if you set (`nloop=1200000`, `nburn=200000`, and `NA=5`), you can obtain (1200000-200000)/5 samples)
 * `scalentd`: "true" or "false", which turn on/off the scaling procedure for the parameters for the long-term NTD polynomial functions (`scale_ntd=true` by default)
 * `delta_scale`: the step width for the scaled long-term NTD parameters if `scalentd=true` (`delta_scale=0.001` by default)
+* `NSB`: Number of the perturbated bases for each iteration (`NSB=100` by default)
 * `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` by default)
 * `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` by default)
 * `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` by default)
@@ -54,6 +55,9 @@ function pos_array_mcmcpvg(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; nloop=1200000::I
   if NPB < 1
     error(" pos_array_mcmcpvg: NPB must be more than 1")
   end
+  if NSB > NPB
+    NSB = NPB
+  end
   # --- Start log
   time1 = now()
   place = pwd()
@@ -71,6 +75,7 @@ function pos_array_mcmcpvg(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; nloop=1200000::I
   println(out0,"Number_of_MCMC_loop: $nloop")
   println(out0,"Burn_in_period: $nburn")
   println(out0,"Sampling_interval: $NA")
+  println(out0,"Number_of_pertubated_bases: $NSB")
   # --- Read data
   println(stderr," --- Read files")
   e = read_ant(fn1)
@@ -201,7 +206,8 @@ function pos_array_mcmcpvg(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; nloop=1200000::I
       iact = divrem(n,2)[2] # iact = 0 or 1
       a = copy(a0)
       if iact == 0
-        @threads for i in 14:NP
+        nss = Vector(14:NP)
+        @threads for i in shuffle(nss)[1:NSB]
           a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
         end
         for i in [1 2 3 6 12]

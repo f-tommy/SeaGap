@@ -7,17 +7,12 @@
 #using Statistics
 #using LinearAlgebra
 #using Base.Threads
-#include("/Users/tomita/Workspace/CasGap/src/read_gnssa.jl")
-#include("/Users/tomita/Workspace/CasGap/src/anttena2tr.jl")
-#include("/Users/tomita/Workspace/CasGap/src/traveltime.jl")
-#include("/Users/tomita/Workspace/CasGap/src/ntdbasis.jl")
-#include("/Users/tomita/Workspace/CasGap/src/perturbation.jl")
 #include("scale.jl")
 #include("scale_est.jl")
 
 export pos_array_mcmcpvgc
 """
-    pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,ss,gd0,sgd; fn1,fn2,fn3,fn4,nloop,nburn,NA,scalentd,delta_scale,fno0,fno1,fno2,fno3,fno4,fno5,fno6.fno7)
+    pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,ss,gd0,sgd; fn1,fn2,fn3,fn4,NSB,nloop,nburn,NA,scalentd,delta_scale,fno0,fno1,fno2,fno3,fno4,fno5,fno6.fno7)
 
 Perform MCMC-based static array positioning considering a sloping sound speed strucre with a fixed number of temporal B-spline bases.
 Shallow gradients and gradient depth are constrained assuming prior Cauchy and normal distributions, respectively. 
@@ -33,6 +28,7 @@ Shallow gradients and gradient depth are constrained assuming prior Cauchy and n
 * `NA`: Number of the sampling interval (`NA=5` by default; if you set (`nloop=1200000`, `nburn=200000`, and `NA=5`), you can obtain (1200000-200000)/5 samples)
 * `scalentd`: "true" or "false", which turn on/off the scaling procedure for the parameters for the long-term NTD polynomial functions (`scale_ntd=true` by default)
 * `delta_scale`: the step width for the scaled long-term NTD parameters if `scalentd=true` (`delta_scale=0.001` by default)
+* `NSB`: Number of the perturbated B-spline bases for each iteration (`NSB=100` in default)
 * `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` by default)
 * `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` by default)
 * `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` by default)
@@ -49,7 +45,7 @@ Shallow gradients and gradient depth are constrained assuming prior Cauchy and n
 # Example
     pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,sgd=0.2)
 """ 
-function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0.65,sgd=0.1; nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,scalentd=true,delta_scale=0.001,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String)
+function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64,ss=3.e-4, gd0=0.65,sgd=0.1; NSB=100::Int64,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,scalentd=true,delta_scale=0.001,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String)
   println(stderr," === GNSS-A positioning: pos_array_mcmcpvgc  ===")
   # --- Input check
   if XDUCER_DEPTH < 0
@@ -57,6 +53,9 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
   end
   if NPB < 1
     error(" pos_array_mcmcpvgc: NPB must be more than 1")
+  end
+  if NSB > NPB
+    NSB = NPB
   end
   # --- Start log
   time1 = now()
@@ -75,6 +74,7 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
   println(out0,"Number_of_MCMC_loop: $nloop")
   println(out0,"Burn_in_period: $nburn")
   println(out0,"Sampling_interval: $NA")
+  println(out0,"Number_of_random_sampling_bases: $NSB")
   # --- Read data
   println(stderr," --- Read files")
   e = read_ant(fn1)
@@ -207,7 +207,8 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
       iact = divrem(n,2)[2] # iact = 0 or 1
       a = copy(a0)
       if iact == 0
-        @threads for i in 14:NP
+        nss = Vector(14:NP)
+        @threads for i in shuffle(nss)[1:NSB]
           a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
         end
         for i in [1 2 3 6 12]
