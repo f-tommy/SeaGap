@@ -7,29 +7,26 @@
 #using Statistics
 #using LinearAlgebra
 #using Base.Threads
-#include("/Users/tomita/Workspace/CasGap/src/read_gnssa.jl")
-#include("/Users/tomita/Workspace/CasGap/src/anttena2tr.jl")
-#include("/Users/tomita/Workspace/CasGap/src/traveltime.jl")
-#include("/Users/tomita/Workspace/CasGap/src/ntdbasis.jl")
-#include("/Users/tomita/Workspace/CasGap/src/perturbation.jl")
 #include("scale.jl")
 #include("scale_est.jl")
 
 export pos_array_mcmcpvg
 """
-    pos_array_mcmcpvg(lat,XDUCER_DEPTH,NPB; fn1,fn2,fn3,fn4,NSB,nloop,nburn,NA,scalentd,delta_scale,fno0,fno1,fno2,fno3,fno4,fno5,fno6.fno7)
+    pos_array_mcmcpvg(lat,XDUCER_DEPTH,NPB; NSB,fn1,fn2,fn3,fn4,nloop,nburn,NA,scalentd,delta_scale,fno0,fno1,fno2,fno3,fno4,fno5,fno6.fno7)
 
 Perform MCMC-based static array positioning considering a sloping sound speed structure with a fixed number of temporal B-spline bases.
 
 * `lat`: Site latitude
 * `XDUCER_DEPTH`: Transducer depth from the sea-surface
 * `NPB`: Number of temporal B-spline bases
+* `NSB`: Number of the perturbated bases for each iteration (`NSB=100` by default)
 * `nloop`: Total number of the MCMC iterations (`nloop=1200000` by default)
 * `nburn`: Burn-in period of the MCMC iterations (samples less than `nburn` is excluded from the final results; `nburn=200000` by default)
 * `NA`: Number of the sampling interval (`NA=5` by default; if you set (`nloop=1200000`, `nburn=200000`, and `NA=5`), you can obtain (1200000-200000)/5 samples)
 * `scalentd`: "true" or "false", which turn on/off the scaling procedure for the parameters for the long-term NTD polynomial functions (`scale_ntd=true` by default)
 * `delta_scale`: the step width for the scaled long-term NTD parameters if `scalentd=true` (`delta_scale=0.001` by default)
-* `NSB`: Number of the perturbated bases for each iteration (`NSB=100` by default)
+* `daave`: Step width for average NTD when (`aventd=true`)
+* `daind`: Scaling dactor for step width of individual NTD when (`aventd=true`)
 * `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` by default)
 * `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` by default)
 * `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` by default)
@@ -46,7 +43,7 @@ Perform MCMC-based static array positioning considering a sloping sound speed st
 # Example
     pos_array_mcmcpvg(lat,XDUCER_DEPTH,NPB,delta_scale=0.002)
 """
-function pos_array_mcmcpvg(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,scalentd=true,delta_scale=0.001,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String)
+function pos_array_mcmcpvg(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; NSB=100,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,scalentd=true,delta_scale=0.001,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String,aventd=false,daave=5.e-6,daind=10)
   println(stderr," === GNSS-A positioning: pos_array_mcmcpvg  ===")
   # --- Input check
   if XDUCER_DEPTH < 0
@@ -75,7 +72,8 @@ function pos_array_mcmcpvg(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; nloop=1200000::I
   println(out0,"Number_of_MCMC_loop: $nloop")
   println(out0,"Burn_in_period: $nburn")
   println(out0,"Sampling_interval: $NA")
-  println(out0,"Number_of_pertubated_bases: $NSB")
+  println(out0,"Number_of_random_sampling_bases: $NSB")
+  println(out0,"Step_widths_for_NTD: $daave $daind")
   # --- Read data
   println(stderr," --- Read files")
   e = read_ant(fn1)
@@ -106,6 +104,10 @@ function pos_array_mcmcpvg(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; nloop=1200000::I
     println(out0,"Delta_scale: $delta_scale")
   end
   a = copy(a0)
+  # --- Average ntd
+  if aventd == true
+    da[NP0+1:NP] = da[NP0+1:NP] ./ daind
+  end
 # --- Formatting --- #
   println(stderr," --- Initial formatting")
   # --- Calculate TR position
@@ -212,6 +214,9 @@ function pos_array_mcmcpvg(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; nloop=1200000::I
         end
         for i in [1 2 3 6 12]
           a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
+        end
+        if aventd == true
+          a[14:NP] = perturbation_single.(a[14:NP],daave,a1[14:NP],a2[14:NP],dr=(rand()-0.5)*2)
         end
       else
         for i in 7:11

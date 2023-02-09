@@ -12,7 +12,7 @@
 
 export pos_array_mcmcpvgc
 """
-    pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,ss,gd0,sgd; fn1,fn2,fn3,fn4,NSB,nloop,nburn,NA,scalentd,delta_scale,fno0,fno1,fno2,fno3,fno4,fno5,fno6.fno7)
+    pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,ss,gd0,sgd; fn1,fn2,fn3,fn4,nloop,nburn,NA,scalentd,delta_scale,fno0,fno1,fno2,fno3,fno4,fno5,fno6.fno7)
 
 Perform MCMC-based static array positioning considering a sloping sound speed strucre with a fixed number of temporal B-spline bases.
 Shallow gradients and gradient depth are constrained assuming prior Cauchy and normal distributions, respectively. 
@@ -20,6 +20,7 @@ Shallow gradients and gradient depth are constrained assuming prior Cauchy and n
 * `lat`: Site latitude
 * `XDUCER_DEPTH`: Transducer depth from the sea-surface
 * `NPB`: Number of temporal B-spline bases
+* `NSB`: Number of the perturbated bases for each iteration (`NSB=100` by default)
 * `ss`: Scale paramter (width of a distribution) for the prior Cauchy distribution applying to the shallow gradients with location parameter of zero (`ss=3.e-4` by default)
 * `gd0`: Mean of the prior normal distribution applying to the gradient depth [km] (`gd0=0.65` by default)
 * `sgd`: Standard deviation of the prior normal distribution applying to the gradient depth [km] (`sgd=0.1` by default)
@@ -28,7 +29,9 @@ Shallow gradients and gradient depth are constrained assuming prior Cauchy and n
 * `NA`: Number of the sampling interval (`NA=5` by default; if you set (`nloop=1200000`, `nburn=200000`, and `NA=5`), you can obtain (1200000-200000)/5 samples)
 * `scalentd`: "true" or "false", which turn on/off the scaling procedure for the parameters for the long-term NTD polynomial functions (`scale_ntd=true` by default)
 * `delta_scale`: the step width for the scaled long-term NTD parameters if `scalentd=true` (`delta_scale=0.001` by default)
-* `NSB`: Number of the perturbated B-spline bases for each iteration (`NSB=100` in default)
+* `aventd`: If `aventd`=true, M-H pertubation for short-term NTDs are separated into average_NTD and individual NTD perturbation (`aventd=false` by default)
+* `daave`: Step width for average NTD when (`aventd=true`)
+* `daind`: Step width for individual NTD when (`aventd=true`)
 * `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` by default)
 * `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` by default)
 * `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` by default)
@@ -45,7 +48,7 @@ Shallow gradients and gradient depth are constrained assuming prior Cauchy and n
 # Example
     pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,sgd=0.2)
 """ 
-function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64,ss=3.e-4, gd0=0.65,sgd=0.1; NSB=100::Int64,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,scalentd=true,delta_scale=0.001,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String)
+function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0.65,sgd=0.1; NSB=100::Int64,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,scalentd=true,delta_scale=0.001,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String,aventd=false,daave=5.e-6,daind=10.0)
   println(stderr," === GNSS-A positioning: pos_array_mcmcpvgc  ===")
   # --- Input check
   if XDUCER_DEPTH < 0
@@ -75,6 +78,7 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64,ss=3.e-4, gd0=0.
   println(out0,"Burn_in_period: $nburn")
   println(out0,"Sampling_interval: $NA")
   println(out0,"Number_of_random_sampling_bases: $NSB")
+  println(out0,"Step_widths_for_NTD: $daave $daind")
   # --- Read data
   println(stderr," --- Read files")
   e = read_ant(fn1)
@@ -105,6 +109,10 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64,ss=3.e-4, gd0=0.
     println(out0,"Delta_scale: $delta_scale")
   end
   a = copy(a0)
+  # --- Average ntd
+  if aventd == true
+    da[NP0+1:NP] = da[NP0+1:NP] ./ daind
+  end
 # --- Formatting --- #
   println(stderr," --- Initial formatting")
   # --- Calculate TR position
@@ -208,11 +216,14 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64,ss=3.e-4, gd0=0.
       a = copy(a0)
       if iact == 0
         nss = Vector(14:NP)
-        @threads for i in shuffle(nss)[1:NSB]
+        for i in shuffle(nss)[1:NSB]
           a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
         end
         for i in [1 2 3 6 12]
           a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
+        end
+        if aventd == true
+          a[14:NP] = perturbation_single.(a[14:NP],daave,a1[14:NP],a2[14:NP],dr=(rand()-0.5)*2)
         end
       else
         for i in 7:11
