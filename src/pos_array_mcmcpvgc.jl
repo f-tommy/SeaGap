@@ -32,6 +32,7 @@ Shallow gradients and gradient depth are constrained assuming prior Cauchy and n
 * `aventd`: If `aventd`=true, M-H pertubation for short-term NTDs are separated into average_NTD and individual NTD perturbation (`aventd=false` by default)
 * `daave`: Step width for average NTD when (`aventd=true`)
 * `daind`: Step width for individual NTD when (`aventd=true`)
+* `tscale`: Temporal scaling for time in the polynomial functions (time [sec] is converted into [hour]/`tscale`, `tscale=10` by default)
 * `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` by default)
 * `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` by default)
 * `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` by default)
@@ -48,7 +49,7 @@ Shallow gradients and gradient depth are constrained assuming prior Cauchy and n
 # Example
     pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,sgd=0.2)
 """ 
-function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0.65,sgd=0.1; NSB=100::Int64,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,scalentd=true,delta_scale=0.001,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String,aventd=false,daave=5.e-6,daind=10.0)
+function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0.65,sgd=0.1; NSB=100::Int64,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,scalentd=true,delta_scale=0.001,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String,aventd=false,daave=2.e-6,daind=10.0,tscale=10.0)
   println(stderr," === GNSS-A positioning: pos_array_mcmcpvgc  ===")
   # --- Input check
   if XDUCER_DEPTH < 0
@@ -79,6 +80,7 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
   println(out0,"Sampling_interval: $NA")
   println(out0,"Number_of_random_sampling_bases: $NSB")
   println(out0,"Step_widths_for_NTD: $daave $daind")
+  println(out0,"Time_scale_for_polynomial_functions: $tscale")
   # --- Read data
   println(stderr," --- Read files")
   e = read_ant(fn1)
@@ -175,7 +177,7 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
     tc[n] = tc1[n] + tc2[n]
     tdg1[n] = xd[n]*a0[4]+yd[n]*a0[5]
     tdg2[n] = (hh1[n]*a0[4] + hh2[n]*a0[5])*a0[6]/2
-    tt[n] = (tt[n] - smin)/3600
+    tt[n] = (tt[n] - smin)/3600/tscale
     if scalentd == true
       td0[n] = scale(a0[7],sf[1]) + tt[n]*scale(a0[8],sf[2]) + scale(a0[9],sf[3])*tt[n]^2 + scale(a0[10],sf[4])*tt[n]^3 + scale(a0[11],sf[5])*tt[n]^4
     else
@@ -254,7 +256,7 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
         tc[i] = tc1[i] + tc2[i]
         tdg1[i] = xd[i]*a[4]+yd[i]*a[5]
         tdg2[i] = (hh1[i]*a[4] + hh2[i]*a[5])*a[6]/2
-        tt[i] = (tt[i] - smin)/3600
+        tt[i] = (tt[i] - smin)/3600/tscale
         td0[i] = 0.0
         if scalentd == true 
           td0[i] = scale(a[7],sf[1]) + tt[i]*scale(a[8],sf[2]) + scale(a[9],sf[3])*tt[i]^2 + scale(a[10],sf[4])*tt[i]^3 + scale(a[11],sf[5])*tt[i]^4
@@ -354,7 +356,7 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
     dt[n] = (tp[n] - tc)*vert
     tdg1[n] = xd*a[4]+yd*a[5]
     tdg2[n] = (hh1*a[4] + hh2*a[5])*a[6]/2
-    tt0 = (tt[n] - smin)/3600
+    tt0 = (tt[n] - smin)/3600/tscale
     td0[n] = a[7] + tt0*a[8] + a[9]*tt0^2 + a[10]*tt0^3 + a[11]*tt0^4
     td[n] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b,NPB)
   end

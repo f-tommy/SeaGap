@@ -15,12 +15,13 @@ The step widths for mcmc are determined as standard deviations / `error_scale`.
 * `fn1`: Seafloor transponder position file (`fn1="pxp-ini.xyh"` by default)
 * `fn2`: NTD estimation result file obtained by `pos_array_all` (`fn2="residual.out"` by default)
 * `fn3`: Estimation result file for all parameters obtained by `pos_array_all` (`fn3="solve.out"` by default)
-* error_scale: Scaling factor for step widths (`error_scale=5.0` by default)
+* `error_scale`: Scaling factor for step widths (`error_scale=5.0` by default)
+* `tscale`: Temporal scaling for time in the polynomial functions (time [sec] is converted into [hour]/`tscale`, `tscale=10` by default, this should correspond to the whole observational period in hours)
 
 # Example
     make_initial(error_scale=6.0)
 """
-function make_initial(;fn1="pxp-ini.xyh"::String,fn2="residual.out"::String,fn3="solve.out"::String,fno="initial.inp"::String,error_scale = 5.0)
+function make_initial(;fn1="pxp-ini.xyh"::String,fn2="residual.out"::String,fn3="solve.out"::String,fno="initial.inp"::String,error_scale = 5.0,tscale=10.0)
   println(stderr," === Make initial for pos_array_mcmcpvg  ===")
   # --- Start log
   time1 = now()
@@ -36,7 +37,7 @@ function make_initial(;fn1="pxp-ini.xyh"::String,fn2="residual.out"::String,fn3=
   t0 = findmin(ts)[1] # start time in observational hour
   dep = mean(abs.(pz)) / 1000.0 # mean depth
   println(stderr," t0: $t0, dep: $dep")
-  tt = (ts .- t0)/60/60  # observational hours
+  tt = (ts .- t0)/60/60/tscale  # observational hours
   H = hcat(tt*0 .+1.0,tt,tt.^2,tt.^3,tt.^4)
   d = copy(to)
   # --- Inversion
