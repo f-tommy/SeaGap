@@ -92,7 +92,7 @@ function pos_array_each(lat,XDUCER_DEPTH=3.0; NR=3::Int64,eps=1.e-4,ITMAX=20::In
   # --- Start each positioning
   id = zeros(Int64,numf)
   for n in 1:numf
-    ip = zeros(Int64,numk)
+    ip = zeros(Int64,num)
     i0 = 1
     for i in 1:num
       if nf[i] == n
