@@ -11,8 +11,7 @@ If new value is out of (`x1`,`x2`), the original value `x0` is returned.
 # Example
     perturbation_single(5.1,0.1,0.0,20.0)
 """
-function perturbation_single(x0,dx,x1,x2)
-  dr = (rand()-0.5)*2
+function perturbation_single(x0,dx,x1,x2; dr=(rand()-0.5)*2)
   x = x0 + dr*dx
   if x < x1 || x > x2
     x = x0

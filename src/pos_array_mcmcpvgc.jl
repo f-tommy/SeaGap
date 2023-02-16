@@ -12,7 +12,7 @@
 
 export pos_array_mcmcpvgc
 """
-    pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,ss,gd0,sgd; fn1,fn2,fn3,fn4,nloop,nburn,NA,scalentd,delta_scale,fno0,fno1,fno2,fno3,fno4,fno5,fno6.fno7)
+    pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,ss,gd0,sgd; fn1,fn2,fn3,fn4,nloop,nburn,ndelay,NA,lscale,aventd,daave,daind,tscale,fno0,fno1,fno2,fno3,fno4,fno5,fno6,fno7)
 
 Perform MCMC-based static array positioning considering a sloping sound speed strucre with a fixed number of temporal B-spline bases.
 Shallow gradients and gradient depth are constrained assuming prior Cauchy and normal distributions, respectively. 
@@ -27,8 +27,7 @@ Shallow gradients and gradient depth are constrained assuming prior Cauchy and n
 * `nloop`: Total number of the MCMC iterations (`nloop=1200000` by default)
 * `nburn`: Burn-in period of the MCMC iterations (samples less than `nburn` is excluded from the final results; `nburn=200000` by default)
 * `NA`: Number of the sampling interval (`NA=5` by default; if you set (`nloop=1200000`, `nburn=200000`, and `NA=5`), you can obtain (1200000-200000)/5 samples)
-* `scalentd`: "true" or "false", which turn on/off the scaling procedure for the parameters for the long-term NTD polynomial functions (`scale_ntd=true` by default)
-* `delta_scale`: the step width for the scaled long-term NTD parameters if `scalentd=true` (`delta_scale=0.001` by default)
+* `lscale`: Scaling factor for the step width of the long-term NTD parameters (`lscale=1.0` by default)
 * `aventd`: If `aventd`=true, M-H pertubation for short-term NTDs are separated into average_NTD and individual NTD perturbation (`aventd=false` by default)
 * `daave`: Step width for average NTD when (`aventd=true`)
 * `daind`: Step width for individual NTD when (`aventd=true`)
@@ -49,7 +48,7 @@ Shallow gradients and gradient depth are constrained assuming prior Cauchy and n
 # Example
     pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,sgd=0.2)
 """ 
-function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0.65,sgd=0.1; NSB=100::Int64,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,scalentd=true,delta_scale=0.001,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String,aventd=false,daave=2.e-6,daind=10.0,tscale=10.0)
+function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0.65,sgd=0.1; NSB=100::Int64,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,lscale=1.0,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String,aventd=false,daave=2.e-6,daind=10.0,tscale=10.0,ndelay=1::Int64)
   println(stderr," === GNSS-A positioning: pos_array_mcmcpvgc  ===")
   # --- Input check
   if XDUCER_DEPTH < 0
@@ -90,25 +89,6 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
   NP, a0, a1, a2, da, list = read_initial(fn5)
   if z[end] < maximum(abs.(pz))
     error(" pos_array_all: maximum water depth of $fn3 must be deeper than site depth of $fn2")
-  end
-  # --- Scale
-  println(out0,"Scale: $scalentd")
-  sa0 = zeros(5)
-  sf = zeros(5)
-  if scalentd == true
-    dsc = zeros(5)
-    for i in 1:5
-      dsc[i] = a0[i+6]
-      sf[i] = log10.(da[i+6]) # scaling factor
-    end
-    sa0 = scale_est(dsc,sf) # scaled initial values for polynomial functions
-    for i in 1:5
-      a0[i+6] = sa0[i]
-      da[i+6] = delta_scale
-      sar = scale(a0[i+6],sf[i])
-      println(out0,"   Scaled: $(dsc[i]) -> $(a0[i+6]) $(sf[i]) $sar")
-    end
-    println(out0,"Delta_scale: $delta_scale")
   end
   a = copy(a0)
   # --- Average ntd
@@ -178,12 +158,7 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
     tdg1[n] = xd[n]*a0[4]+yd[n]*a0[5]
     tdg2[n] = (hh1[n]*a0[4] + hh2[n]*a0[5])*a0[6]/2
     tt[n] = (tt[n] - smin)/3600/tscale
-    if scalentd == true
-      td0[n] = scale(a0[7],sf[1]) + tt[n]*scale(a0[8],sf[2]) + scale(a0[9],sf[3])*tt[n]^2 + scale(a0[10],sf[4])*tt[n]^3 + scale(a0[11],sf[5])*tt[n]^4
-    else
-      td0[n] = a0[7] + tt[n]*a0[8] + a0[9]*tt[n]^2 + a0[10]*tt[n]^3 + a0[11]*tt[n]^4
-    end
-  #  println(stderr,"$vert $(tp[n]) $tc $tt $tt0 $smin $td0 $td $tdg1 $tdg2")
+    td0[n] = a0[7] + tt[n]*a0[8] + a0[9]*tt[n]^2 + a0[10]*tt[n]^3 + a0[11]*tt[n]^4
     d1[n] = (tp[n] - tc[n])*vert[n] - td[n] - tdg2[n]
     d2[n] = (tp[n] - tc[n])*vert[n] - tdg2[n] - td0[n] - tdg1[n]
     hodp1[n] = d1[n]*d1[n]
@@ -195,8 +170,8 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
   rms02 = sqrt(hod02/num)
   dhod01 = -(a0[6]-gd0)^2/(2*sgd^2)
   dhod02 = 1/pi*ss/(a0[4]^2+ss^2) + 1/pi*ss/(a0[5]^2+ss^2)
-  hod01 = -num/2*log(10^a0[12]) - hod01/(2*(1.e-4)^2*10^a0[12])
-  hod02 = -num/2*log(10^a0[13]) - hod02/(2*(1.e-4)^2*10^a0[13])
+  hod01 = -num/2*log((10^a0[12])^2) - hod01/(2*(10^a0[12])^2)
+  hod02 = -num/2*log((10^a0[13])^2) - hod02/(2*(10^a0[13])^2)
   println(stderr,"   RMS; $rms01, $dhod01, $dhod02, PDF1: $hod01, PDF2: $hod02")
   println(out0,"   RMS; $rms01, $dhod01, $dhod02, PDF1: $hod01, PDF2: $hod02")
   println(out0,"   Pos; $(a0[1:3])")
@@ -213,6 +188,10 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
   open(fno2,"w") do out2
     hod1 = 0.0; hod2 = 0.0
     for n in 1:nloop
+      # --- L-NTD scaling
+      if n == ndelay
+        da[7:11] = da[7:11] ./ lscale
+      end
       # --- MCMC perturbation
       iact = divrem(n,2)[2] # iact = 0 or 1
       a = copy(a0)
@@ -221,8 +200,11 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
         for i in shuffle(nss)[1:NSB]
           a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
         end
-        for i in [1 2 3 6 12]
+        for i in [1 2 3 6]
           a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
+        end
+        if n >= ndelay
+          a[12] = perturbation_single(a0[12],da[12],a1[12],a2[12])
         end
         if aventd == true
           a[14:NP] = perturbation_single.(a[14:NP],daave,a1[14:NP],a2[14:NP],dr=(rand()-0.5)*2)
@@ -231,8 +213,11 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
         for i in 7:11
           a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
         end
-        for i in [4 5 13]
+        for i in [4 5]
           a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
+        end
+        if n >= ndelay
+          a[13] = perturbation_single(a0[13],da[13],a1[13],a2[13])
         end
       end
       # --- Calculate PDF
@@ -258,11 +243,7 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
         tdg2[i] = (hh1[i]*a[4] + hh2[i]*a[5])*a[6]/2
         tt[i] = (tt[i] - smin)/3600/tscale
         td0[i] = 0.0
-        if scalentd == true 
-          td0[i] = scale(a[7],sf[1]) + tt[i]*scale(a[8],sf[2]) + scale(a[9],sf[3])*tt[i]^2 + scale(a[10],sf[4])*tt[i]^3 + scale(a[11],sf[5])*tt[i]^4
-        else
-          td0[i] = a[7] + tt[i]*a[8] + a[9]*tt[i]^2 + a[10]*tt[i]^3 + a[11]*tt[i]^4
-        end
+        td0[i] = a[7] + tt[i]*a[8] + a[9]*tt[i]^2 + a[10]*tt[i]^3 + a[11]*tt[i]^4
         d1[i] = (tp[i] - tc[i])*vert[i] - td[i] - tdg2[i]
         d2[i] = (tp[i] - tc[i])*vert[i] - tdg2[i] - td0[i] - tdg1[i]
         hodp1[i] = d1[i]*d1[i]
@@ -276,8 +257,8 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
       dhod1 = -(a[6]-gd0)^2/(2*sgd^2)
       dhod2 = 1/pi*ss/(a[4]^2+ss^2) + 1/pi*ss/(a[5]^2+ss^2)
       #
-      hod1 = -num/2*log(10^a[12]) - hod1/(2*(1.e-4)^2*10^a[12])
-      hod2 = -num/2*log(10^a[13]) - hod2/(2*(1.e-4)^2*10^a[13])
+      hod1 = -num/2*log((10^a[12])^2) - hod1/(2*(10^a[12])^2)
+      hod2 = -num/2*log((10^a[13])^2) - hod2/(2*(10^a[13])^2)
       # --- Acceptance
       acp0 = log(rand())
       acp = hod1 + hod2 - hod01 - hod02 + dhod1 - dhod01 + dhod2 - dhod02
@@ -300,11 +281,6 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
         println(out2,"$n $iact $idef $hod01 $hod02 $hod $rms01 $rms02 $dhod01 $dhod02")
         if n > nburn
           aout = copy(a0)
-          if scalentd == true
-            for i in 1:5
-              aout[i+6] = scale(a0[i+6],sf[i])
-            end 
-          end 
           Base.print_array(out1,transpose(aout))
           println(out1,"")
         end

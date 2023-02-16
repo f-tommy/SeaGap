@@ -53,12 +53,12 @@ function make_initial(;fn1="pxp-ini.xyh"::String,fn2="residual.out"::String,fn3=
     println(out,"$(a0[3]) -20.0 20.0 $(e0[3]) UD_disp.") # UD disp.
     println(out,"0.0 -20.0 20.0 1.e-6 S-Gradient_EW") # EW shallow gradient
     println(out,"0.0 -20.0 20.0 1.e-6 S-Gradient_NS") # NS shallow gradient
-    println(out,"0.65 0 $dep 0.003 Gradient_depth") # Gradient depth
+    println(out,"0.65 0 $dep 0.005 Gradient_depth") # Gradient depth
     for i in 1:num
       println(out,"$(a[i]) -20.0 20.0 $(e[i]) L-NTD_$i") # Long-term NTD by 4d polynomial functions
     end
-    println(out,"0.0 -20.0 20.0 0.005 Scale_1") # Scaling factor for MCMC-1
-    println(out,"0.0 -20.0 20.0 0.005 Scale_2") # Scaling factor for MCMC-2
+    println(out,"-4.0 -20.0 20.0 0.005 Scale_1") # Scaling factor for MCMC-1
+    println(out,"-3.5 -20.0 20.0 0.005 Scale_2") # Scaling factor for MCMC-2
     for i in 4:num0
       ii = i - 3
       println(out,"$(a0[i]) -20.0 20.0 $(e0[i]) S-NTD_$ii") # 3d B-spline functions for detailed NTD
