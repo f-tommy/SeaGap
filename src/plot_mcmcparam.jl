@@ -7,7 +7,7 @@ export plot_mcmcparam
 """
     plot_mcmcparam(NA; fno,fn,plot_size,lmargin,rmargin,tmargin,bmargin,show,nshuffle,ms,lfs,tfs,bmargin0)
 
-Make a figure of the unknown parameters change through the MCMC iteration using the results of `pos_array_mcmcpvg()` and `pos_array_mcmcpvgc()`.
+Make a figure of the unknown parameters change through the MCMC iteration using the results of `pos_array_mcmcgrad()` and `static_array_mcmcgradc()`.
 
 * `NA`: Sampling interval of the MCMC prcessing (`NA=5` by default), which must be same with `NA` in `pos_array_mcmcpvg`
 * `fn`: the input file name (`fn="sample.out"` by default)

@@ -1,17 +1,17 @@
 #using Plots
 #using DelimitedFiles
 
-export plot_time_array_each, plot_map_array_each
+export plot_time_kinematic_array, plot_map_kinematic_array
 
 """
-    plot_map_array_each(xrange,yrange; autoscale,fn,fno,plot_size,lmargin,tmargin,bmargin,rmargin,show,ms,gfs,col_num)
+    plot_map_kinematic_array(xrange,yrange; autoscale,fn,fno,plot_size,lmargin,tmargin,bmargin,rmargin,show,ms,gfs,col_num)
 
-Make a figure plotting the estimated array displacements obtained by `pos_array_each()` in a horizontal map.
+Make a figure plotting the estimated array displacements obtained by `kinematic_array()` in a horizontal map.
 
 * `xrange` and `yrange`: EW and NS ranges for plot [m]
 * `autoscale`: If `autoscale=true` (default), the plot range is automatically determined. If `autoscale=false`, the plot range is fixed by `xrange` and `yrange`.
-* `fn`: Input file name (`fn="array_each.out"` by default)
-* `fno`: Output figure name (`fno="map_array_each.pdf"` by default)
+* `fn`: Input file name (`fn="kinematic_array.out"` by default)
+* `fno`: Output figure name (`fno="map_kinematic_array.pdf"` by default)
 * `plot_size`: Figure size (`plot_size=(600,500)` by default)
 * `lmargin`: Plot margin for the left edge (`lmargin=2.5` by default)
 * `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
@@ -23,10 +23,10 @@ Make a figure plotting the estimated array displacements obtained by `pos_array_
 * `col_num`: If `col_num=1` (default), the plot is colored by the observation time. If `col_num=2`, the plot is colored by number of the used observational data. If `col_num=0`, the plot is colored by blue.
 
 # Example
-    SeaGap.plot_map_array_each((-0.5,0.5),(-0.5,0.5),autoscale=false)
+    SeaGap.plot_map_kinematic_array((-0.5,0.5),(-0.5,0.5),autoscale=false)
 
 """
-function plot_map_array_each(xrange=(-1,1),yrange=(-1,1);autoscale=true::Bool,fn="array_each.out"::String,fno="map_array_each.pdf"::String,plot_size=(600,500),lmargin=2.5,tmargin=1.0,bmargin=1.0,rmargin=1.0,show=false::Bool,ms=5::Int64,gfs=12::Int64,col_num=1::Int64)
+function plot_map_kinematic_array(xrange=(-1,1),yrange=(-1,1);autoscale=true::Bool,fn="kinematic_array.out"::String,fno="map_kinematic_array.pdf"::String,plot_size=(600,500),lmargin=2.5,tmargin=1.0,bmargin=1.0,rmargin=1.0,show=false::Bool,ms=5::Int64,gfs=12::Int64,col_num=1::Int64)
   a = DelimitedFiles.readdlm(fn)
   x = a[:,3]
   y = a[:,4]
@@ -62,14 +62,14 @@ function plot_map_array_each(xrange=(-1,1),yrange=(-1,1);autoscale=true::Bool,fn
 end
 
 """
-    plot_time_array_each(EW_range,NS_range, ntdrange; autoscale,fn,fno,plot_size,lmargin,tmargin,bmargin,rmargin,bmargin0,show,ms,gfs)
+    plot_time_kinematic_array(EW_range,NS_range, ntdrange; autoscale,fn,fno,plot_size,lmargin,tmargin,bmargin,rmargin,bmargin0,show,ms,gfs)
 
 Make a figure plotting the estimated array displacements obtained by `pos_array_each()` in time-series.
 
 * `EW_range`, `NS_range`, and `ntdrange`: Plot range of Y-sxis for EW [m], NS [m], and NTD [ms] components
 * `autoscale`: If `autoscale=true` (default), the plot range is automatically determined. If `autoscale=false`, the plot range of Y-axis is fixed by `EW_range`, `NS_range`, and `ntdrange`.
-* `fn`: Input file name (`fn="array_each.out"` by default)
-* `fno`: Output figure name (`fno="time_array_each.pdf"` by default)
+* `fn`: Input file name (`fn="kinematic_array.out"` by default)
+* `fno`: Output figure name (`fno="time_kinematic_array.pdf"` by default)
 * `plot_size`: Figure size (`plot_size=(600,800)` by default)
 * `lmargin`: Plot margin for the left edge (`lmargin=3.5` by default)
 * `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
@@ -81,10 +81,10 @@ Make a figure plotting the estimated array displacements obtained by `pos_array_
 * `gfs`: Fontsize for label (gudefontsize: `gfs=12` by default)
 
 # Example
-    SeaGap.plot_time_array_each(show=true)
+    SeaGap.plot_time_kinematic_array(show=true)
 
 """
-function plot_time_array_each(EW_range=(-1.5,1.5),NS_range=(-1.5,1.5),ntdrange=(-3,3);autoscale=true::Bool,fno="time_array_each.pdf"::String,fn="array_each.out"::String,plot_size=(600,800),lmargin=3.5,rmargin=1.0, tmargin=1.0, bmargin=1.0, bmargin0=-4.0,show=false,ms=6::Int64,gfs=12::Int64)
+function plot_time_kinematic_array(EW_range=(-1.5,1.5),NS_range=(-1.5,1.5),ntdrange=(-3,3);autoscale=true::Bool,fno="time_kinematic_array.pdf"::String,fn="kinematic_array.out"::String,plot_size=(600,800),lmargin=3.5,rmargin=1.0, tmargin=1.0, bmargin=1.0, bmargin0=-4.0,show=false,ms=6::Int64,gfs=12::Int64)
   a = DelimitedFiles.readdlm(fn)
   t0 = a[1,1]
   t = (a[:,1] .- t0) / (60*60)

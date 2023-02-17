@@ -2,21 +2,21 @@
 #using Statistics
 #using LinearAlgebra
 
-export pos_single
+export static_individual
 """
-    pos_single(lat,XDUCER_DEPTH,NPB; fn1,fn2,fn3,fn4,eps,ITMAX,delta_pos,fno0,fno1,fno2,fno3,fno4,fno5)
+    static_individual(lat,TR_DEPTH,NPB; fn1,fn2,fn3,fn4,eps,ITMAX,delta_pos,fno0,fno1,fno2,fno3,fno4,fno5)
 
 Perform static positioning for determination of individual transponder positions with a fixed number of temporal B-spline bases.
 
 * `lat`: Site latitude
-* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `TR_DEPTH`: Transducer depth from the sea-surface
 * `NPB`: Number of temporal B-spline bases
 * `eps`: Convergence threshold (`eps=1.e-4` by default)
 * `IMAX`: Maximum number of iterations (`IMAX=50` by default)
 * `delta_pos`: Infinitesimal amount of the array displacements to calculate the Jacobian matrix (`delta_pos=1.e-4`)
 * `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` by default)
-* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` by default)
-* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` by default)
+* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.inp"` by default)
+* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.inp"` by default)
 * `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` by default)
 * `fno0`: Output file name for logging  (`fno0=log.txt` by default)
 * `fno1`: Output file name for the estimated parameters and their stds (`fno1=solve.out` by default)
@@ -25,23 +25,23 @@ Perform static positioning for determination of individual transponder positions
 * `fno4`: Output file name for the estimated B-spline bases (`fno4=bspline.out` by default)
 
 # Example
-    pos_single(38.3,3.0,81)
+    static_individual(38.3,3.0,81)
 """
-function pos_single(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos = 1.e-4,fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual.out"::String,fno4="bspline.out"::String)
-  println(stderr," === GNSS-A positioning: pos_single  ===")
+function static_individual(lat,TR_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos = 1.e-4,fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual.out"::String,fno4="bspline.out"::String)
+  println(stderr," === GNSS-A positioning: static_individual  ===")
   # --- Input check
-  if XDUCER_DEPTH < 0
-    error(" pos_single: XDUCER_DEPTH must be positive")
+  if TR_DEPTH < 0
+    error(" static_individual: TR_DEPTH must be positive")
   end
   if NPB < 1
-    error(" pos_single: NPB must be more than 1")
+    error(" static_individual: NPB must be more than 1")
   end
   # --- Start log
   time1 = now()
   place = pwd()
   open(fno0,"w") do out0 
   println(out0,time1)
-  println(out0,"pos_single.jl at $place")
+  println(out0,"static_individual.jl at $place")
   # --- Set parameters
   println(stderr," --- Set parameters")
   NC = 18
@@ -51,12 +51,12 @@ function pos_single(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::Strin
   println(out0,"Default_latitude: $lat")
   println(out0,"Maximum_iterations: $ITMAX")
   println(out0,"Delat_position: $delta_pos")
-  println(out0,"XDUCER_DEPTH: $XDUCER_DEPTH")
+  println(out0,"TR_DEPTH: $TR_DEPTH")
   # --- Read data
   println(stderr," --- Read files")
   e = read_ant(fn1)
   numk, px, py, pz = read_pxppos(fn2)
-  z, v, nz_st, numz = read_prof(fn3,XDUCER_DEPTH)
+  z, v, nz_st, numz = read_prof(fn3,TR_DEPTH)
   num, nk, tp, t1, x1, y1, z1, h1, p1, r1, t2, x2, y2, z2, h2, p2, r2, nf = read_obsdata(fn4)
   NP0 = numk * 3
   # --- Fixed earth radius
@@ -73,14 +73,14 @@ function pos_single(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::Strin
     xd1[i], yd1[i], zd1[i] = anttena2tr(x1[i],y1[i],z1[i],h1[i],p1[i],r1[i],e)
     xd2[i], yd2[i], zd2[i] = anttena2tr(x2[i],y2[i],z2[i],h2[i],p2[i],r2[i],e)
   end
-  # --- Set mean xducer_height & TT corection
+  # --- Set mean tr_height & TT corection
   println(stderr," --- TT corection")
   println(out0,"Travel-time correction: $NC")
-  xducer_height = ( mean(zd1) + mean(zd2) ) / 2.0
-  println(stderr,"     xducer_height:",xducer_height)
+  tr_height = ( mean(zd1) + mean(zd2) ) / 2.0
+  println(stderr,"     tr_height:",tr_height)
   Tv0 = zeros(numk); Vd = zeros(numk); Vr = zeros(numk); cc = zeros(numk,NC)
   for k in 1:numk
-    Tv0[k], Vd[k], Vr[k], cc[k,1:NC], rms = ttcorrection(px[k],py[k],pz[k],xducer_height,z,v,nz_st,numz,XDUCER_DEPTH,lat)
+    Tv0[k], Vd[k], Vr[k], cc[k,1:NC], rms = ttcorrection(px[k],py[k],pz[k],tr_height,z,v,nz_st,numz,TR_DEPTH,lat)
     println(stderr,"     RMS for PxP-$k: ",rms)
     println(out0,"     RMS for PxP-$k: ",rms)
   end
@@ -110,20 +110,20 @@ function pos_single(lat,XDUCER_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::Strin
       ky = (k - 1) * 3 + 2
       kz = (k - 1) * 3 + 3
       # --- Calculate TT
-      tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky],pz[k]+a0[kz],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-      tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky],pz[k]+a0[kz],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+      tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky],pz[k]+a0[kz],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+      tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky],pz[k]+a0[kz],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       vert = (vert1 + vert2) / 2.0
       tc = tc1 + tc2
       d[n] = (tp[n] - tc) * vert
       # --- Differential
-      tcx1, to1, vert1 = xyz2tt_rapid(px[k]+a0[kx]+dx,py[k]+a0[ky],pz[k]+a0[kz],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-      tcx2, to2, vert2 = xyz2tt_rapid(px[k]+a0[kx]+dx,py[k]+a0[ky],pz[k]+a0[kz],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+      tcx1, to1, vert1 = xyz2tt_rapid(px[k]+a0[kx]+dx,py[k]+a0[ky],pz[k]+a0[kz],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+      tcx2, to2, vert2 = xyz2tt_rapid(px[k]+a0[kx]+dx,py[k]+a0[ky],pz[k]+a0[kz],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tcx = tcx1 + tcx2
-      tcy1, to1, vert1 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky]+dy,pz[k]+a0[kz],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-      tcy2, to2, vert2 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky]+dy,pz[k]+a0[kz],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+      tcy1, to1, vert1 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky]+dy,pz[k]+a0[kz],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+      tcy2, to2, vert2 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky]+dy,pz[k]+a0[kz],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tcy = tcy1 + tcy2
-      tcz1, to1, vert1 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky],pz[k]+a0[kz]+dz,xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-      tcz2, to2, vert2 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky],pz[k]+a0[kz]+dz,xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+      tcz1, to1, vert1 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky],pz[k]+a0[kz]+dz,xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+      tcz2, to2, vert2 = xyz2tt_rapid(px[k]+a0[kx],py[k]+a0[ky],pz[k]+a0[kz]+dz,xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tcz = tcz1 + tcz2
       # --- Fill matrix
       H[n,kx] = (tcx-tc)/dx*vert; H[n,ky]=(tcy-tc)/dy*vert; H[n,kz]=(tcz-tc)/dz*vert

@@ -7,7 +7,7 @@ export plot_prof
 
 Make a figure of a sound speed profile.
 
-* `fn`: Input file of a sound speed profile (`fn="ss_prof.zv"` by default)
+* `fn`: Input file of a sound speed profile (`fn="ss_prof.inp"` by default)
 * `fno`: Output figure name (`fno="ss_prof.pdf"` by default)
 * `plot_size`: Figure size (`plot_size=(450,600)` by default)
 * `show`: if `show=true`, a figure is shown on REPL and is not saved as a file (`show=false` by default)
@@ -17,9 +17,9 @@ Make a figure of a sound speed profile.
 * `bmargin`: Plot margin for the bottom edge (`bmargin=1.0` by default)
 
 # Example
-    plot_prof(fno="ss_prof.png",fn="ss_prof.zv",show=false)
+    plot_prof(fno="ss_prof.png",fn="ss_prof.inp",show=false)
 """
-function plot_prof(;fno="ss_prof.pdf"::String,fn="ss_prof.zv"::String,plot_size=(450,600),lmargin=2.5,tmargin=1.0,bmargin=1.0,rmargin=1.0,show=false::Bool)
+function plot_prof(;fno="ss_prof.pdf"::String,fn="ss_prof.inp"::String,plot_size=(450,600),lmargin=2.5,tmargin=1.0,bmargin=1.0,rmargin=1.0,show=false::Bool)
   a = DelimitedFiles.readdlm(fn)
   numz = size(a)[1]
   z = a[1:numz,1]

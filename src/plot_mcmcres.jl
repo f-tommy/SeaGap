@@ -7,7 +7,7 @@ export plot_mcmcres
 """
     plot_mcmcres(;fno,fn,plot_size,lmargin,rmargin,tmargin,bmargin,show,nshuffle,ms,lfs,tfs,bmargin0)
 
-Make a figure of the posterior PDF and the travel-time RMS changes through the MCMC iteration using the results of `pos_array_mcmcpvg()` and `pos_array_mcmcpvgc()`.
+Make a figure of the posterior PDF and the travel-time RMS changes through the MCMC iteration using the results of `static_array_mcmcgrad()` and `static_array_mcmcgradc()`.
 
 * `fn`: the input file name (`fn="mcmc.out"` by default)
 * `fno`: Output figure name (`fno="mcmc_res.pdf"` by default)

@@ -1,22 +1,22 @@
 #using DelimitedFiles
 #using Statistics
 
-export position_each
+export position_kinematic
 """
-    position_each(;fn,weight,fno)
+    position_kinematic(;fn,weight,fno)
 
-Caclulate simple statistical values for the positioning results of `pos_array_each()`
+Caclulate simple statistical values for the positioning results of `kinematic_array()`
 
-* `fn`: Input file (`fn="array_each.out"` by default)
-* `fno`: Output file with the format (1: Mean time [sec], 2: Mean EW position [m], 3: Mean NS position [m], 4: UD position [m](Not Available), 5: Std of EW position [m], 6: Std of NS position [m], Std of UD position [m](Not Available); the default is `fno="position_each.out"`. 
+* `fn`: Input file (`fn="array_kinematic.out"` by default)
+* `fno`: Output file with the format (1: Mean time [sec], 2: Mean EW position [m], 3: Mean NS position [m], 4: UD position [m](Not Available), 5: Std of EW position [m], 6: Std of NS position [m], Std of UD position [m](Not Available); the default is `fno="position_kinematic.out"`. 
 * `weight`: If `weight=true`, weighted mean position is calculated using the shot groups with number of shot data for each group >= 4 (`weight=false` by default).
 
 # Example
-  position_each(weight=true)
+  position_kinematic(weight=true)
 
 """
 
-function position_each(;fn="array_each.out",weight=false,fno="position_each.out")
+function position_kinematic(;fn="kinematic_array.out",weight=false,fno="position_kinematic.out")
   N, M, dat0 = read_matrix(fn)
   if weight == true
     dat = dat0[dat0[:,2].>=4,:]

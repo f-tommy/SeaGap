@@ -2,7 +2,7 @@
 #using DelimitedFiles
 #using Statistics
 #using Printf
-#include("/usr/local/share/julia_bin/unixsort.jl")
+#include("unixsort.jl")
 #include("LineFitting.jl")
 
 export plot_displacement

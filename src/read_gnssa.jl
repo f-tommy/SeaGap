@@ -52,12 +52,12 @@ end
     
 # === Read sound speed file
 """
-    read_prof(filename,XDUCER_DEPTH)
+    read_prof(filename,TR_DEPTH)
 
 Read a sound speed profile `filename`.
 
 * `filename`: Input file name for a sound speed profile
-* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `TR_DEPTH`: Transducer depth from the sea-surface
 
 Output:
 * `z`: Arrangement for depth
@@ -68,7 +68,7 @@ Output:
 # Example
     z, v, nz_st, numz = read_prof("ss_prof.zv",3.0)
 """
-function read_prof(filename::String,XDUCER_DEPTH)
+function read_prof(filename::String,TR_DEPTH)
   # --- Read sound speed data
   a = DelimitedFiles.readdlm(filename)
   numz = size(a)[1]
@@ -77,7 +77,7 @@ function read_prof(filename::String,XDUCER_DEPTH)
   # --- Find nz_st
   nz = 1
   nz_st = 1
-  while z[nz] < XDUCER_DEPTH
+  while z[nz] < TR_DEPTH
     nz_st = nz
     nz += 1
   end
@@ -137,7 +137,7 @@ end
 """
     read_initial(filename)
 
-Read a file `filename` for initial values used in `pos_array_mcmcpvg` or `pos_array_mcmcpvgc`, and store them as arrangements.
+Read a file `filename` for initial values used in `static_array_mcmcgrad` or `static_array_mcmcgradc`, and store them as arrangements.
 
 Output:
 * `np`: Number of data
@@ -249,7 +249,7 @@ Output:
 * `h2`: Heading when recieving [deg]
 * `p2`: Pitch when recieving [deg]
 * `r2`: Roll when recieving [deg]
-* `nf`: Shot group number for `pos_array_each()`
+* `nf`: Shot group number for `kinematic_array()`
 
 # Example
     num,nk,tp,t1,x1,y1,z1,h1,p1,r1,t2,x2,y2,z2,h2,p2,r2,nf = read_obsdata("obsdata.inp")
@@ -274,7 +274,7 @@ function read_obsdata(filename::String)
   h2 = a[1:num,14]               # Recieve heading
   p2 = a[1:num,15]               # Recieve pitch
   r2 = a[1:num,16]               # Receive roll
-  nf = Int.(round.(a[1:num,17])) # Flag for pos_array_each
+  nf = Int.(round.(a[1:num,17])) # Flag for kinematic_array
   println(stderr," --- Read $filename: $num")
   if num < 3
     error(" read_obsdata: number of lines must be more than 3")
@@ -285,7 +285,7 @@ end
 """
     read_ntd(filename)
 
-Read a file `filename` for NTD estimation results obtained by `pos_array_all()`, and store them as arrangements.
+Read a file `filename` for NTD estimation results obtained by `static_array()` for example, and store them as arrangements.
 
 Output:
 * `ts`: Shot Time [sec]

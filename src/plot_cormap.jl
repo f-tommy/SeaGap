@@ -10,7 +10,7 @@ export plot_cormap
 """
     plot_cormap(;txt,all,fn,fno,fno0,as,pfs,plot_size,show,lmargin,tmargin,bmargin,rmargin)
 
-Make a figure correlation coefficient map from the sampling results of `pos_array_mcmcpvg()`.
+Make a figure correlation coefficient map from the sampling results of `static_array_mcmcgrad()` or `static_array_mcmcgradc()`.
 
 * `txt`: if `txt=true`, text data file of correlation coefficients is saved (`txt=false` by default)
 * `all`: if `all=true`, correlation coefficients are calculated for all parameters; if `all=false`, correlation coefficients are calculated for major paramters
@@ -31,7 +31,7 @@ Make a figure correlation coefficient map from the sampling results of `pos_arra
 
 """
 function plot_cormap(;txt=false::Bool,all=false::Bool,fn="sample.out"::String,fno="cormap.pdf"::String,fno0="correlation.out"::String,as=10::Int64,pfs=8::Int64,plot_size=(600,600),show=false::Bool,lmargin=0.5,tmargin=0.5,bmargin=0.5,rmargin=4.0)
-  println(stderr," === Correlation for pos_array_mcmcpvg samples ===")
+  println(stderr," === Correlation for static_array_mcmcgrad samples ===")
   time1 = now()
   # --- Read data
   println(stderr," --- Read files")

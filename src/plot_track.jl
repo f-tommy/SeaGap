@@ -8,7 +8,7 @@ export plot_track, plot_timetrack
 * `xrange`: Range of EW component in meters when `autoscale=false`
 * `yrange`: Range of NS component in meters when `autoscale=false`
 * `autoscale`: If `autoscale=true`, the plot range is automatically defined
-* `fn1`: File name of the seafloor transponder positions (`fn1="pxp-ini.xyh"` by default)
+* `fn1`: File name of the seafloor transponder positions (`fn1="pxp-ini.inp"` by default)
 * `fn2`: Travel-time residual file name (`fn2="obsdata.inp"` by default)
 * `fno`: Output figure name (`fno="track.pdf"` by default)
 * `show`: if `show=true`, a figure is shown on REPL and is not saved as a file (`show=false` by default)
@@ -23,9 +23,9 @@ export plot_track, plot_timetrack
 * `cb`: Color scale (`cb=:lightrainbow` by default)
 
 # Example
-    plot_track((-3000,3000),(-3000,3000),autoscale=false,fn1="pxp-ini.xyh",fn2="obsdata.inp",fno="track.pdf")
+    plot_track((-3000,3000),(-3000,3000),autoscale=false,fn1="pxp-ini.inp",fn2="obsdata.inp",fno="track.pdf")
 """
-function plot_track(xrange=(-3000,3000),yrange=(-3000,3000);autoscale=true::Bool,fn1="pxp-ini.xyh"::String,fn2="obsdata.inp"::String,fno="track.pdf"::String,plot_size=(600,500),lmargin=2.5,tmargin=1.0,bmargin=1.0,rmargin=1.0,show=false::Bool,ms1=10::Int64,ms2=5::Int64,gfs=12::Int64,cb=:rainbow)
+function plot_track(xrange=(-3000,3000),yrange=(-3000,3000);autoscale=true::Bool,fn1="pxp-ini.inp"::String,fn2="obsdata.inp"::String,fno="track.pdf"::String,plot_size=(600,500),lmargin=2.5,tmargin=1.0,bmargin=1.0,rmargin=1.0,show=false::Bool,ms1=10::Int64,ms2=5::Int64,gfs=12::Int64,cb=:rainbow)
   a = DelimitedFiles.readdlm(fn1)
   numk = size(a)[1]
   px = a[1:numk,1]

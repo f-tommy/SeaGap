@@ -6,7 +6,7 @@ export plot_histogram2d_each
 """
     plot_histogram2d_each(param1,param2; fn,show,fno,plot_size,lmargin,tmargin,bmargin,rmargin,nbins)
 
-Make a figure of a heatmap for certain two parameters (`param1` and `param2`) from the sampling results of `pos_array_mcmcpvg()` or `pos_array_mcmcpvgc()`.
+Make a figure of a heatmap for certain two parameters (`param1` and `param2`) from the sampling results of `static_array_mcmcgrad()` or `static_array_mcmcgradc()`.
 
 * `param1`: Parameter name 1
 * `param2`: Parameter name 2
@@ -24,7 +24,7 @@ Make a figure of a heatmap for certain two parameters (`param1` and `param2`) fr
     plot_histogram2d_each("UD_disp.","S-NTD_10",fno="histogram2d_UD_SNTD-10.png")
 """
 function plot_histogram2d_each(param1="EW_disp."::String,param2="NS_disp."::String; fn="sample.out"::String,show=false::Bool,fno="histogram2d_each.pdf"::String,plot_size=(650,600),lmargin=1.5,tmargin=0.5,bmargin=0.5,rmargin=1.5,nbins=50::Int64)
-  println(stderr," === Drawing 2d-histogram for pos_array_mcmcpvg samples ===")
+  println(stderr," === Drawing 2d-histogram for static_array_mcmcgrad samples ===")
   time1 = now()
   # --- Read data
   println(stderr," --- Read files")

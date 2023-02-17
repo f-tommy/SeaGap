@@ -5,7 +5,7 @@ export plot_AICBIC
 """
     plot_AICBIC(;type,fno,fn,lmargin,rmargin,tmargin,bmargin,show)
 
-Make a figure plotting `type` (AIC or BIC) values searched by `pos_array_all_AICBIC()`.
+Make a figure plotting `type` (AIC or BIC) values searched by `static_array_AICBIC()`.
 
 * `type`: "AIC" or "BIC" (`type="BIC"` by default)
 * `fno`: Output figure name (`fno="AICBIC_search.pdf"` by default)

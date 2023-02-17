@@ -11,14 +11,14 @@ export plot_histogram
 """
     plot_histogram(NPB; all,drawnls,fn,fn0,fno,plot_size,lmargin,tmargin,bmargin,rmargin,nbins)
 
-Make a figure file of histograms from the sampling results obtained by `pos_array_mcmcpvg()` or `pos_array_mcmcpvgc()`.
+Make a figure file of histograms from the sampling results obtained by `static_array_mcmcgrad()` or `static_array_mcmcgradc()`.
 
 * `NPB`: Number of 3d B-spline bases
-* `fn0`: Inversion results by `pos_array_all()` ("solve.out" by default), which is used when you'd like to plot the `pos_array_all()` results on the histogram
+* `fn0`: Inversion results by `pos_array_all()` ("solve.out" by default), which is used when you'd like to plot the `static_array()` results on the histogram
 * `fn`: Input file ("sample.out" by default)
 * `fno`: Output figure name (note that this file must be a PDF file: "histogram.pdf" by default)
 * `all`: if `all=true`, histograms for all parameters are drawn; if `all=false`, histograms for major six parameters (array displacements, shallow gradients, gradient depth) (`all=false` by default)
-* `drawnls`: if `drawnls=true`, a normal distribution estimated by `pos_array_all()` is drawn in a histogram (`drawnls=false` by default); the normal distributions are shown for the array displacements and 3d B-spline NTDs
+* `drawnls`: if `drawnls=true`, a normal distribution estimated by `static_array()` is drawn in a histogram (`drawnls=false` by default); the normal distributions are shown for the array displacements and 3d B-spline NTDs
 * `nbins`: Number of histogram's intervals (`nbins=50` by default)
 * `plot_size`: Figure size (`plot_size=(650,500)` by default)
 * `lmargin`: Plot margin for the left edge (`lmargin=1.5` by default)
@@ -31,7 +31,7 @@ Make a figure file of histograms from the sampling results obtained by `pos_arra
 
 """
 function plot_histogram(NPB=100::Int64; all=false,drawnls=false,fn="sample.out"::String,fn0="solve.out"::String,fno="histogram.pdf"::String,plot_size=(650,500),lmargin=1.5,tmargin=1.0,bmargin=1.0,rmargin=1.5,nbins=50::Int64)
-  println(stderr," === Drawing histograms for pos_array_mcmcpvg samples ===")
+  println(stderr," === Drawing histograms for static_array_mcmcgrad samples ===")
   time1 = now()
   println(stderr," --- Output file check")
   if isfile(fno) == true

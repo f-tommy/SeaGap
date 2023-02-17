@@ -3,19 +3,19 @@
 #using Statistics
 #using Printf
 
-export plot_denoise_each, denoise_each
+export plot_denoise_kinematic, denoise_kinematic
 """
-    plot_denoise_each(;xrange,yrange,autoscale,fn1,fn2,fno,plot_size,lmargin1,lmargin2,rmargin,tmargin,bmargin,show,ms1,m2)
+    plot_denoise_kinematic(;xrange,yrange,autoscale,fn1,fn2,fno,plot_size,lmargin1,lmargin2,rmargin,tmargin,bmargin,show,ms1,m2)
 
-Make a figure of `fno` from the `denoise()` output file.
+Make a figure of `fno` from the `denoise_kinematic()` output file.
 
 * `xrange`: EW range for the array positions [m] (`xrange=(-1,1)` by default)
 * `yrange`: NS range for the array positions [m] (`yrange=(-1,1)` by default)
 * `autoscale`: if `autoscale=true`, the EW and NS ranges are automatically determined; if `autoscale=false`, the EW and NS ranges are fixed to `xrange` and `yrange` (`autoscale=true` by default)
 * `plot_size`: Figure size (`plot_size=(900,600)` by default)
-* `fn1`: Input file name (`fn="array_each.out"` by defualt)
+* `fn1`: Input file name (`fn="kinematic_array.out"` by defualt)
 * `fn2`: Input file name after denoise (`fn="tmp"` by defualt)
-* `fno`: Output file name (`fno="denoise_each.pdf"` by defualt)
+* `fno`: Output file name (`fno="denoise_kinematic.pdf"` by defualt)
 * `lmargin1`: Plot margin for the left edge for map (`lmargin=4.0` by default)
 * `lmargin2`: Plot margin for the left edge for time-series (`lmargin=3.0` by default)
 * `rmargin`: Plot margin for the right edge (`rmargin=1.0` by default)
@@ -25,7 +25,7 @@ Make a figure of `fno` from the `denoise()` output file.
 * `ms1`: Plotted marker size for map (`ms1=5` by default)
 * `ms2`: Plotted marker size for time-series (`ms2=4` by default)
 """
-function plot_denoise_each(;xrange=(-1,1),yrange=(-1,1), autoscale=true::Bool,fno="denoise_each.pdf"::String,fn1="array_each.out"::String,fn2="tmp",plot_size=(900,600),lmargin1=4.0,lmargin2=4.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=false::Bool, ms1=5::Int64,ms2=4::Int64)
+function plot_denoise_kinematic(;xrange=(-1,1),yrange=(-1,1), autoscale=true::Bool,fno="denoise_kinematic.pdf"::String,fn1="kinematic_array.out"::String,fn2="tmp",plot_size=(900,600),lmargin1=4.0,lmargin2=4.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=false::Bool, ms1=5::Int64,ms2=4::Int64)
   n, m, dat01 = read_matrix(fn1)
   dat1 = unixsort(dat01,1)
   n, m, dat02 = read_matrix(fn2)
@@ -54,9 +54,9 @@ function plot_denoise_each(;xrange=(-1,1),yrange=(-1,1), autoscale=true::Bool,fn
 end
 
 """
-    denoise_each(;xrange,yrange,method,autoscale,n,sigma1,sigma2,type,save,prompt,fn,fn0,plot_size,lmargin1,lmargin2,rmargin,tmargin,bmargin,show,fno1,fno2)
+    denoise_kinematic(;xrange,yrange,method,autoscale,n,sigma1,sigma2,type,save,prompt,fn,fn0,plot_size,lmargin1,lmargin2,rmargin,tmargin,bmargin,show,fno1,fno2)
 
-Eliminate outliers from 
+Eliminate outliers from the results of `kinematic_array()`.
 Calculate travel-time residual, estimate smoothed travel-time residuals by `n` running `method` filter, exclude outliers beyond `sigma` Std, and plot them by `plot_denoise()`. The denoised observational file is rewritten in `fn4`.
 
 * `method`: Method of running filter ("mean" or "method"; `method="median"` by default)
@@ -67,8 +67,8 @@ Calculate travel-time residual, estimate smoothed travel-time residuals by `n` r
 * `save`: if `save=true`, the input data file `fn` is renamed and saved as `fn0` (`save=true` by default)
 * `prompt`: if `prompt=true`, confirmation message is shown; if false, the input file is forcely saved (`prompt=true` by default)  
 
-* `fn`: Input data file (`fn="array_each.out"` by default)
-* `fn0`: if `save=true`, `fn` is saved (`fn0="array_each.out_org"` by default)
+* `fn`: Input data file (`fn="kinematic_array.out"` by default)
+* `fn0`: if `save=true`, `fn` is saved (`fn0="kinematic_array.out_org"` by default)
 * `xrange`: EW range for the array positions [m] (`xrange=(-1,1)` by default)
 * `yrange`: NS range for the array positions [m] (`yrange=(-1,1)` by default)
 * `autoscale`: if `autoscale=true`, the vertical ranges are automatically determined; if `autoscale=false`, the EW and NS ranges are fixed to `xrange` and `yrange` (`autoscale=true` by default)
@@ -86,9 +86,9 @@ Calculate travel-time residual, estimate smoothed travel-time residuals by `n` r
 * `fno2`: Output text file for the elimited data list
 
 # Example
-    denoise_each(n=7,sigma1=4.0,sigma2=5.0,method="median")
+    denoise_kinematic(n=7,sigma1=4.0,sigma2=5.0,method="median")
 """
-function denoise_each(;xrange=(-1,1),yrange=(-1,1),method="median"::String,autoscale=true::Bool,n=15,sigma1=4.0,sigma2=4.0,type="both",save=true::Bool,prompt=true::Bool,fn="array_each.out"::String, fn0="array_each.out_org"::String, plot_size=(1000,500),lmargin1=4.0,lmargin2=3.0,rmargin=1.0, tmargin=1.0, bmargin=3.0, show=true::Bool, fno1="denoise_each.pdf"::String,ms1=5::Int64,ms2=4::Int64,fno2="eliminated_list.out")
+function denoise_kinematic(;xrange=(-1,1),yrange=(-1,1),method="median"::String,autoscale=true::Bool,n=15,sigma1=4.0,sigma2=4.0,type="both",save=true::Bool,prompt=true::Bool,fn="kinematic_array.out"::String, fn0="kinematic_array.out_org"::String, plot_size=(1000,500),lmargin1=4.0,lmargin2=3.0,rmargin=1.0, tmargin=1.0, bmargin=3.0, show=true::Bool, fno1="kinematic_denoise.pdf"::String,ms1=5::Int64,ms2=4::Int64,fno2="eliminated_list.out")
   # Read file
   N, M, dat0 = read_matrix(fn)
   dat = unixsort(dat0,1)
@@ -150,7 +150,7 @@ function denoise_each(;xrange=(-1,1),yrange=(-1,1),method="median"::String,autos
   end
   # Plot
   println(stderr,"Plot denoised time-series")
-  plot_denoise_each(fno=fno1,fn1=fn,fn2="tmp",xrange=xrange,yrange=yrange,plot_size=plot_size,lmargin1=lmargin1,lmargin2=lmargin2,rmargin=rmargin, tmargin=tmargin, bmargin=bmargin, show=show,ms1=ms2,ms2=ms2) 
+  plot_denoise_kinematic(fno=fno1,fn1=fn,fn2="tmp",xrange=xrange,yrange=yrange,plot_size=plot_size,lmargin1=lmargin1,lmargin2=lmargin2,rmargin=rmargin, tmargin=tmargin, bmargin=bmargin, show=show,ms1=ms2,ms2=ms2) 
   println(stderr,dlist)
   if prompt == true
     q = Base.prompt("Do you accept the denoise processing? (yes/no)")

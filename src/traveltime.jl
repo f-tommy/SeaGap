@@ -41,14 +41,14 @@ end
 
 # === Calculte tt_vert0
 """
-    ttvert0(pxp_height,xducer_height,XDUCER_DEPTH,z,v,nz_st,numz)
+    ttvert0(pxp_height,tr_height,TR_DEPTH,z,v,nz_st,numz)
 
 Calculate one-way travel-time along the nadir path.
 
 Input:
 * `pxp_height`: Seafloor transponder height
-* `xducer_height`: Average sea-surface transducer height
-* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `tr_height`: Average sea-surface transducer height
+* `TR_DEPTH`: Transducer depth from the sea-surface
 * `z`: Arrangement for depth
 * `v`: Arrangement for velocity
 * `nz_st`: Layer number which inculdes transducer
@@ -60,18 +60,18 @@ Output:
 * `v_range`: Distance along the nadir path
 
 # Example
-    tt_vert0, v_deep, v_range = ttvert0(pxp_height,xducer_height,XDUCER_DEPTH,z,v,nz_st,numz)
+    tt_vert0, v_deep, v_range = ttvert0(pxp_height,tr_height,TR_DEPTH,z,v,nz_st,numz)
 """
-function ttvert0(pxp_height,xducer_height,XDUCER_DEPTH,z,v,nz_st,numz::Int64)
-  v_range = xducer_height - pxp_height
-  pxp_depth = XDUCER_DEPTH + v_range
+function ttvert0(pxp_height,tr_height,TR_DEPTH,z,v,nz_st,numz::Int64)
+  v_range = tr_height - pxp_height
+  pxp_depth = TR_DEPTH + v_range
   tt_vert0 = 0.0
   id = 0
   v_deep = 0.0
   nz = nz_st
   while id == 0
     if nz == nz_st
-      delta_z = (z[nz+1] - XDUCER_DEPTH)
+      delta_z = (z[nz+1] - TR_DEPTH)
     else
       delta_z = (z[nz+1] - z[nz])
     end
@@ -126,7 +126,7 @@ end
 
 # === Calculate traveltime
 """
-    xyz2tt(pxpx,pxpy,pxpz,rsx,rsy,rsz,z,v,nz_st,numz,Ra,XDUCER_DEPTH)
+    xyz2tt(pxpx,pxpy,pxpz,rsx,rsy,rsz,z,v,nz_st,numz,Ra,TR_DEPTH)
 
 Calculate exact one-way travel-time T_exact (See Tomita & Kido, 2022).
 Usage of this function is also written in Tutorial of the online manual.
@@ -143,7 +143,7 @@ Input:
 * `nz_st`: Layer number which inculdes transducer
 * `numz`: Number of layers
 * `Ra`: Local earth radius
-* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `TR_DEPTH`: Transducer depth from the sea-surface
 
 Output:
 * `tc`: One-way travel-time
@@ -153,17 +153,17 @@ Output:
 # Example
     px = 1500.0; py = 0.0; pz = -3000.0
     xd = 100.0; yd = -100.0; zd = -1.5 
-    tc, Nint, vert = xyz2tt(px,py,pz,xd,yd,zd,z,v,nz_st,numz,Rg,XDUCER_DEPTH)
+    tc, Nint, vert = xyz2tt(px,py,pz,xd,yd,zd,z,v,nz_st,numz,Rg,TR_DEPTH)
 """
-function xyz2tt(pxpx,pxpy,pxpz,rsx,rsy,rsz,z,v,nz_st::Int64,numz::Int64,Ra,XDUCER_DEPTH)
+function xyz2tt(pxpx,pxpy,pxpz,rsx,rsy,rsz,z,v,nz_st::Int64,numz::Int64,Ra,TR_DEPTH)
   # --- Set basic parameters
   eps_dist = 1.e-5
   ITMAX = 50
   # --- Set parameter
-  xducer_height = rsz
+  tr_height = rsz
   pxp_height = pxpz
-  pxp_depth = XDUCER_DEPTH + xducer_height - pxp_height
-  b = Ra + xducer_height
+  pxp_depth = TR_DEPTH + tr_height - pxp_height
+  b = Ra + tr_height
   c = Ra + pxp_height
   x = sqrt((pxpx-rsx)^2+(pxpy-rsy)^2)
   theta = x/Ra
@@ -187,11 +187,11 @@ function xyz2tt(pxpx,pxpy,pxpz,rsx,rsy,rsz,z,v,nz_st::Int64,numz::Int64,Ra,XDUCE
     id = 0
     while id == 0
       if nz == nz_st
-        r0 = Ra + xducer_height
-        r1 = Ra + xducer_height - z[nz+1] + XDUCER_DEPTH
+        r0 = Ra + tr_height
+        r1 = Ra + tr_height - z[nz+1] + TR_DEPTH
       else
-        r0 = Ra + xducer_height + XDUCER_DEPTH - z[nz]
-        r1 = Ra + xducer_height + XDUCER_DEPTH - z[nz+1]
+        r0 = Ra + tr_height + TR_DEPTH - z[nz]
+        r1 = Ra + tr_height + TR_DEPTH - z[nz+1]
       end
       if z[nz+1] >= pxp_depth
         id = 1
@@ -211,7 +211,7 @@ end
 
 # === Travel-time correction
 """
-    ttcorrection(pxpx,pxpy,pxpz,xducer_height,z,v,nz_st,numz,XDUCER_DEPTH,lat)
+    ttcorrection(pxpx,pxpy,pxpz,tr_height,z,v,nz_st,numz,TR_DEPTH,lat)
 
 Estimate coefficients for polynomial functions to calculate approximate travel-time used in `xyz2tt_rapid()`.
 
@@ -219,12 +219,12 @@ Input:
 * `pxpx`: EW transponder position [m]
 * `pxpy`: NS transponder position [m]
 * `pxpz`: UD transponder position [m]
-* `xducer_height`: Average sea-surface transducer height 
+* `tr_height`: Average sea-surface transducer height 
 * `z`: Arrangement for depth
 * `v`: Arrangement for velocity
 * `nz_st`: Layer number which inculdes transducer
 * `numz`: Number of layers
-* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `TR_DEPTH`: Transducer depth from the sea-surface
 * `lat`: Latitude
 
 Output:
@@ -235,10 +235,10 @@ Output:
 * `rms`: RMS when optimizing travel-times
 
 # Example
-    Tv0, Vd, Vr, cc, rms = ttcorrection(px,py,pz,xducer_height,z,v,nz_st,numz,XDUCER_DEPTH,lat)
+    Tv0, Vd, Vr, cc, rms = ttcorrection(px,py,pz,tr_height,z,v,nz_st,numz,TR_DEPTH,lat)
 """
-function ttcorrection(pxpx,pxpy,pxpz,xducer_height,z,v,nz_st::Int64,numz::Int64,XDUCER_DEPTH,lat)
-  tt_vert0, v_deep, v_range = ttvert0(pxpz,xducer_height,XDUCER_DEPTH,z,v,nz_st,numz)
+function ttcorrection(pxpx,pxpy,pxpz,tr_height,z,v,nz_st::Int64,numz::Int64,TR_DEPTH,lat)
+  tt_vert0, v_deep, v_range = ttvert0(pxpz,tr_height,TR_DEPTH,z,v,nz_st,numz)
   # --- Make synthetic data
   #xy_range = sqrt(pxpx^2 + pxpy^2)
   #xrange = xy_range*2.5
@@ -250,15 +250,15 @@ function ttcorrection(pxpx,pxpy,pxpz,xducer_height,z,v,nz_st::Int64,numz::Int64,
   NP = 18
   xs = xrange*(rand(NN).-0.5)
   ys = yrange*(rand(NN).-0.5)
-  hs = hrange*(rand(NN).-0.5) .+ xducer_height
+  hs = hrange*(rand(NN).-0.5) .+ tr_height
   # --- Set inversion matrix
   d = zeros(NN)
   H = zeros(NN,NP)
   Rg, Rl = localradius(lat)
   for i in 1:NN
-    tt_exact, Nitr, vert = xyz2tt(pxpx,pxpy,pxpz,xs[i],ys[i],hs[i],z,v,nz_st,numz,Rg,XDUCER_DEPTH)
+    tt_exact, Nitr, vert = xyz2tt(pxpx,pxpy,pxpz,xs[i],ys[i],hs[i],z,v,nz_st,numz,Rg,TR_DEPTH)
     tt_sphere, theta = ttsphere(pxpx,pxpy,pxpz,xs[i],ys[i],hs[i],Rg,tt_vert0,v_deep,v_range)
-    dh = hs[i] - xducer_height
+    dh = hs[i] - tr_height
     d[i] = tt_exact - tt_sphere
     H[i,1] = 1.0
     H[i,2] = theta
@@ -289,7 +289,7 @@ end
 
 # === Calculate tt_appr
 """
-    xyz2tt_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,xducer_height,cc0)
+    xyz2tt_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,tr_height,cc0)
 
 Calculate approximate one-way travel-time T_appr (See Tomita & Kido, 2022). 
 Usage of this function is also written in Tutorial of the online manual.
@@ -305,7 +305,7 @@ Input:
 * `tt_vert0`: travel-time along the nadir path
 * `v_deep`: Sound speed at the deepest layer where a transponder locates
 * `v_range`: Distance along the nadir path 
-* `xducer_height`: Average sea-surface transducer height
+* `tr_height`: Average sea-surface transducer height
 * `cc0`: Coefficients vector estimated by `ttcorrection()`
 
 Output:
@@ -314,9 +314,9 @@ Output:
 * `vert_r`: Normalizing factor
 
 # Example
-    tc_r, to_r, vert_r = xyz2tt_rapid(px,py,pz,xd,yd,zd,Rg,Tv0,Vd,Vr,xducer_height,cc)
+    tc_r, to_r, vert_r = xyz2tt_rapid(px,py,pz,xd,yd,zd,Rg,Tv0,Vd,Vr,tr_height,cc)
 """
-function xyz2tt_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,xducer_height,cc0)
+function xyz2tt_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,tr_height,cc0)
   delta_z = rsz - pxpz
   theta = sqrt((rsx-pxpx)^2.0+(rsy-pxpy)^2.0) / Rg
   b = Rg + rsz
@@ -327,7 +327,7 @@ function xyz2tt_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,xduc
   tt_vert = tt_vert0 + delta_h / v_deep
   tt_sphere = tt_vert*a/delta_z
   tt_appr = tt_sphere
-  dh = rsz - xducer_height
+  dh = rsz - tr_height
   for i in 1:9
     tt_appr += cc0[i]*theta^(i-1)
     tt_appr += cc0[i+9]*dh*theta^(i-1)
@@ -337,7 +337,7 @@ end
 
 # === Calculate tt_appr
 """
-    xyz2ttg_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,xducer_height,cc0)
+    xyz2ttg_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,tr_height,cc0)
 
 Calculate approximate one-way travel-time T_appr and the deep gradient coefficients h (See Tomita & Kido, 2022). 
 Usage of this function is also written in Tutorial of the online manual.
@@ -353,7 +353,7 @@ Input:
 * `tt_vert0`: travel-time along the nadir path
 * `v_deep`: Sound speed at the deepest layer where a transponder locates
 * `v_range`: Distance along the nadir path 
-* `xducer_height`: Average sea-surface transducer height
+* `tr_height`: Average sea-surface transducer height
 * `cc0`: Coefficients vector estimated by `ttcorrection()`
 
 Output:
@@ -363,9 +363,9 @@ Output:
 * `hh2`: Deep gradient coefficient in NS component
 
 # Example
-    tt_appr, vert, hh1, hh2  = xyz2ttg_rapid(px,py,pz,xd,yd,zd,Rg,Tv0,Vd,Vr,xducer_height,cc)
+    tt_appr, vert, hh1, hh2  = xyz2ttg_rapid(px,py,pz,xd,yd,zd,Rg,Tv0,Vd,Vr,tr_height,cc)
 """
-function xyz2ttg_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,xducer_height,cc0)
+function xyz2ttg_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,tr_height,cc0)
   delta_z = rsz - pxpz
   theta = sqrt((rsx-pxpx)^2.0+(rsy-pxpy)^2.0) / Rg
   xx = pxpx - rsx
@@ -383,7 +383,7 @@ function xyz2ttg_rapid(pxpx,pxpy,pxpz,rsx,rsy,rsz,Rg,tt_vert0,v_deep,v_range,xdu
   tt_vert = tt_vert0 + delta_h / v_deep
   tt_sphere = tt_vert*a/delta_z
   tt_appr = tt_sphere
-  dh = rsz - xducer_height
+  dh = rsz - tr_height
   for i in 1:9
     tt_appr += cc0[i]*theta^(i-1)
     tt_appr += cc0[i+9]*dh*theta^(i-1)

@@ -7,7 +7,7 @@ export plot_mcmcparam_each
 """
     plot_mcmcparam_each(param,NA; fno,fn,plot_size,lmargin,rmargin,tmargin,bmargin,show,nshuffle,ms,lfs,tfs)
 
-Make a figure of an unknown parameter change through the MCMC iteration using the results of `pos_array_mcmcpvg()` and `pos_array_mcmcpvgc()`.
+Make a figure of an unknown parameter change through the MCMC iteration using the results of `static_array_mcmcgrad()` and `static_array_mcmcgradc()`.
 
 * `param`: Parameter name
 * `NA`: Sampling interval of the MCMC prcessing (`NA=5` by default), which must be same with `NA` in `pos_array_mcmcpvg`

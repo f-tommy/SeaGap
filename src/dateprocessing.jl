@@ -1,4 +1,3 @@
-# If you want to apply vector, use as "date2cal.(t)"
 #using Dates
 #using Printf
 

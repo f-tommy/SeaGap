@@ -114,12 +114,12 @@ function plot_denoise(;resrange=(-3,3),resrange2=(-1,1), autoscale=true::Bool,fn
 end
 
 """
-    denoise(lat,XDUCER_DEPTH,resrange,resrange2; method,autoscale,k,n,sigma,save,prompt,fn1,fn2,fn3,fn4,fn0,plot_size,lmargin,rmargin,tmargin,bmargin,show,fno1,fno2)
+    denoise(lat,TR_DEPTH,resrange,resrange2; method,autoscale,k,n,sigma,save,prompt,fn1,fn2,fn3,fn4,fn0,plot_size,lmargin,rmargin,tmargin,bmargin,show,fno1,fno2)
 
 Calculate travel-time residual, estimate smoothed travel-time residuals by `n` running `method` filter, exclude outliers beyond `sigma` Std, and plot them by `plot_denoise()`. The denoised observational file is rewritten in `fn4`.
 
 * `lat`: Site latitude
-* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `TR_DEPTH`: Transducer depth from the sea-surface
 * `method`: Method of running filter ("mean" or "method"; `method="median"` by default)
 * `k`: if `k=0`, `denoise()` is performed for all transponders; if `k` >= 1, `denoise()` is performed for the `k`th transponder. 
 * `n`: Window size for the running filter
@@ -128,8 +128,8 @@ Calculate travel-time residual, estimate smoothed travel-time residuals by `n` r
 * `prompt`: if `prompt=true`, confirmation message is shown; if false, the denoised observation file is forcely saved (`prompt=true` by default)  
 
 * `fn1`: GNSS antenna-transducer offset (`fn1="tr-ant.inp"` by default)
-* `fn2`: Initial transponders position (`fn2="pxp-ini.xyh"` by default)
-* `fn3`: Initial sound speed structure (`fn3="ss_prof.zv"` by default)
+* `fn2`: Initial transponders position (`fn2="pxp-ini.inp"` by default)
+* `fn3`: Initial sound speed structure (`fn3="ss_prof.inp"` by default)
 * `fn4`: Observational file (`fn4="obsdata.inp"` by default)
 * `fn0`: if `save=true`, `fn4` is saved (`fn0="obsdata.inp_org"` by default)
 
@@ -148,11 +148,11 @@ Calculate travel-time residual, estimate smoothed travel-time residuals by `n` r
 * `fno2`: Output figure name
 
 # Example
-    denoise(lat,XDUCER_DEPTH,k=0,n=7,sigma=4.0,method="median")
+    denoise(lat,TR_DEPTH,k=0,n=7,sigma=4.0,method="median")
 """
-function denoise(lat,XDUCER_DEPTH,resrange=(-3,3),resrange2=(-1,1); method="median"::String,autoscale=true::Bool,k=0,n=15,sigma=4.0,save=true::Bool,prompt=true::Bool,fn1="tr-ant.inp"::String, fn2="pxp-ini.xyh"::String, fn3="ss_prof.zv"::String, fn4="obsdata.inp"::String, fn0="obsdata.inp_org"::String, plot_size=(1200,1200),lmargin=6.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=true::Bool, fno1="denoise.out"::String, fno2="denoise.png"::String,ms=6::Int64)
+function denoise(lat,TR_DEPTH,resrange=(-3,3),resrange2=(-1,1); method="median"::String,autoscale=true::Bool,k=0,n=15,sigma=4.0,save=true::Bool,prompt=true::Bool,fn1="tr-ant.inp"::String, fn2="pxp-ini.inp"::String, fn3="ss_prof.inp"::String, fn4="obsdata.inp"::String, fn0="obsdata.inp_org"::String, plot_size=(1200,1200),lmargin=6.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=true::Bool, fno1="denoise.out"::String, fno2="denoise.png"::String,ms=6::Int64)
   # Calcualte travel-time residuals
-  nv,kv,t1,t2,tp,tc,tr,vert = ttres(lat,XDUCER_DEPTH, fn1=fn1, fn2=fn2, fn3=fn3, fn4=fn4)
+  nv,kv,t1,t2,tp,tc,tr,vert = ttres(lat,TR_DEPTH, fn1=fn1, fn2=fn2, fn3=fn3, fn4=fn4)
   dat = hcat(nv,kv,t1,t2,tp,tc,tr,vert)
   # Set array and parameters
   odat = DelimitedFiles.readdlm(fn4)

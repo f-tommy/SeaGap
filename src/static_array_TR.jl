@@ -2,22 +2,22 @@
 #using Statistics
 #using LinearAlgebra
 
-export pos_array_TR
+export static_array_TR
 """
-    pos_array_TR(lat,XDUCER_DEPTH,NPB; fn1,fn2,fn3,fn4,eps,ITMAX,delta_pos,delta_offset,fno0,fno1,fno2,fno3,fno4,fno5)
+    static_array_TR(lat,TR_DEPTH,NPB; fn1,fn2,fn3,fn4,eps,ITMAX,delta_pos,delta_offset,fno0,fno1,fno2,fno3,fno4,fno5)
 
 Perform static array positioning with optimizing offset between a GNSS antenna and a transducer on a sea-surface platform.
 
 * `lat`: Site latitude
-* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `TR_DEPTH`: Transducer depth from the sea-surface
 * `NPB`: Number of temporal B-spline bases
 * `eps`: Convergence threshold (`eps=1.e-4` by default)
 * `IMAX`: Maximum number of iterations (`IMAX=50` by default)
 * `delta_pos`: Infinitesimal amount of the array displacements to calculate the Jacobian matrix (`delta_pos=1.e-4`)
 * `delta_offset`: Infinitesimal amount of the offset between a GNSS antenna and a transducer (`delta_offset=1.e-4`)
 * `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` by default)
-* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` by default)
-* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` by default)
+* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.inp"` by default)
+* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.inp"` by default)
 * `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` by default)
 * `fno0`: Output file name for logging  (`fno0=log.txt` by default)
 * `fno1`: Output file name for the estimated parameters and their stds (`fno1=solve.out` by default)
@@ -27,23 +27,23 @@ Perform static array positioning with optimizing offset between a GNSS antenna a
 * `fno5`: Output file name for the estimated offset between GNSS antenna and transducer (`fno5=tr-ant.out` by default)
 
 # Example
-    pos_array_TR(38.0,5.0,100,delta_offset=5.e-4)
+    static_array_TR(38.0,5.0,100,delta_offset=5.e-4)
 """
-function pos_array_TR(lat, XDUCER_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, delta_offset=1.e-4,fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual.out"::String,fno4="bspline.out"::String,fno5="tr-ant.out"::String)
-  println(stderr," === GNSS-A positioning: pos_array_TR  ===")
+function static_array_TR(lat, TR_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, delta_offset=1.e-4,fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual.out"::String,fno4="bspline.out"::String,fno5="tr-ant.out"::String)
+  println(stderr," === GNSS-A positioning: static_array_TR  ===")
   # --- Input check
-  if XDUCER_DEPTH < 0
-    error(" pos_array_TR: XDUCER_DEPTH must be positive")
+  if TR_DEPTH < 0
+    error(" static_array_TR: TR_DEPTH must be positive")
   end
   if NPB < 1
-    error(" pos_array_TR: NPB must be more than 1")
+    error(" static_array_TR: NPB must be more than 1")
   end
   # --- Start log
   time1 = now()
   place = pwd()
   open(fno0,"w") do out0 
   println(out0,time1)
-  println(out0,"pos_array_TR.jl at $place")
+  println(out0,"static_array_TR.jl at $place")
   # --- Set parameters
   println(stderr," --- Set parameters")
   NP0 = 6; NC = 18
@@ -54,15 +54,15 @@ function pos_array_TR(lat, XDUCER_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::St
   println(out0,"Maximum_iterations: $ITMAX")
   println(out0,"Delat_position: $delta_pos")
   println(out0,"Delat_offset: $delta_offset")
-  println(out0,"XDUCER_DEPTH: $XDUCER_DEPTH")
+  println(out0,"TR_DEPTH: $TR_DEPTH")
   # --- Read data
   println(stderr," --- Read files")
   e = read_ant(fn1)
   numk, px, py, pz = read_pxppos(fn2)
-  z, v, nz_st, numz = read_prof(fn3,XDUCER_DEPTH)
+  z, v, nz_st, numz = read_prof(fn3,TR_DEPTH)
   num, nk, tp, t1, x1, y1, z1, h1, p1, r1, t2, x2, y2, z2, h2, p2, r2, nf = read_obsdata(fn4)
   if z[end] < maximum(abs.(pz))                                                 
-    error(" pos_array_TR: maximum water depth of $fn3 must be deeper than site depth of $fn2")
+    error(" static_array_TR: maximum water depth of $fn3 must be deeper than site depth of $fn2")
   end
   # --- Fixed Earth radius
   Rg, Rl = localradius(lat)
@@ -78,14 +78,14 @@ function pos_array_TR(lat, XDUCER_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::St
     xd1[i], yd1[i], zd1[i] = anttena2tr(x1[i],y1[i],z1[i],h1[i],p1[i],r1[i],e)
     xd2[i], yd2[i], zd2[i] = anttena2tr(x2[i],y2[i],z2[i],h2[i],p2[i],r2[i],e)
   end
-  # --- Set mean xducer_height & TT corection
+  # --- Set mean tr_height & TT corection
   println(stderr," --- TT corection")
   println(out0,"Travel-time correction: $NC")
-  xducer_height = ( mean(zd1) + mean(zd2) ) / 2.0
-  println(stderr,"     xducer_height:",xducer_height)
+  tr_height = ( mean(zd1) + mean(zd2) ) / 2.0
+  println(stderr,"     tr_height:",tr_height)
   Tv0 = zeros(numk); Vd = zeros(numk); Vr = zeros(numk); cc = zeros(numk,NC)
   for k in 1:numk
-    Tv0[k], Vd[k], Vr[k], cc[k,1:NC], rms = ttcorrection(px[k],py[k],pz[k],xducer_height,z,v,nz_st,numz,XDUCER_DEPTH,lat)
+    Tv0[k], Vd[k], Vr[k], cc[k,1:NC], rms = ttcorrection(px[k],py[k],pz[k],tr_height,z,v,nz_st,numz,TR_DEPTH,lat)
     println(stderr,"     RMS for PxP-$k: ",rms)
     println(out0,"     RMS for PxP-$k: ",rms)
   end
@@ -118,39 +118,39 @@ function pos_array_TR(lat, XDUCER_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::St
       xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
       xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
       # --- Calculate TT
-      tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-      tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+      tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+      tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       vert = (vert1 + vert2) / 2.0
       tc = tc1 + tc2
       d[n] = (tp[n] - tc)*vert
       # --- Differential for pos
-      tcx1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1]+dx,py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-      tcx2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1]+dx,py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+      tcx1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1]+dx,py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+      tcx2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1]+dx,py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tcx = tcx1 + tcx2
-      tcy1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2]+dy,pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-      tcy2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2]+dy,pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+      tcy1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2]+dy,pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+      tcy2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2]+dy,pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tcy = tcy1 + tcy2
-      tcz1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3]+dz,xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-      tcz2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3]+dz,xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+      tcz1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3]+dz,xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+      tcz2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3]+dz,xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tcz = tcz1 + tcz2
       # --- Difference for tr-ant
       e0[1] = a0[4] + de; e0[2] = a0[5]; e0[3] = a0[6]
       xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
       xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
-      tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-      tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+      tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+      tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tce1 = tc1 + tc2
       e0[1] = a0[4]; e0[2] = a0[5] + de; e0[3] = a0[6]
       xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
       xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
-      tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-      tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+      tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+      tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tce2 = tc1 + tc2
       e0[1] = a0[4]; e0[2] = a0[5]; e0[3] = a0[6] + de
       xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
       xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
-      tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-      tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+      tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+      tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tce3 = tc1 + tc2
       # --- Fill matrix
       H[n,1] = (tcx-tc)/dx*vert; H[n,2]=(tcy-tc)/dy*vert; H[n,3]=(tcz-tc)/dz*vert

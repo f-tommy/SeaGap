@@ -7,18 +7,16 @@
 #using Statistics
 #using LinearAlgebra
 #using Base.Threads
-#include("scale.jl")
-#include("scale_est.jl")
 
-export pos_array_mcmcpvgc
+export static_array_mcmcgradc
 """
-    pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,ss,gd0,sgd; fn1,fn2,fn3,fn4,nloop,nburn,ndelay,NA,lscale,aventd,daave,daind,tscale,fno0,fno1,fno2,fno3,fno4,fno5,fno6,fno7)
+    static_array_mcmcgradc(lat,TR_DEPTH,NPB,ss,gd0,sgd; fn1,fn2,fn3,fn4,nloop,nburn,ndelay,NA,lscale,aventd,daave,daind,tscale,fno0,fno1,fno2,fno3,fno4,fno5,fno6,fno7)
 
 Perform MCMC-based static array positioning considering a sloping sound speed strucre with a fixed number of temporal B-spline bases.
 Shallow gradients and gradient depth are constrained assuming prior Cauchy and normal distributions, respectively. 
 
 * `lat`: Site latitude
-* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `TR_DEPTH`: Transducer depth from the sea-surface
 * `NPB`: Number of temporal B-spline bases
 * `NSB`: Number of the perturbated bases for each iteration (`NSB=100` by default)
 * `ss`: Scale paramter (width of a distribution) for the prior Cauchy distribution applying to the shallow gradients with location parameter of zero (`ss=3.e-4` by default)
@@ -30,11 +28,11 @@ Shallow gradients and gradient depth are constrained assuming prior Cauchy and n
 * `lscale`: Scaling factor for the step width of the long-term NTD parameters (`lscale=1.0` by default)
 * `aventd`: If `aventd`=true, M-H pertubation for short-term NTDs are separated into average_NTD and individual NTD perturbation (`aventd=false` by default)
 * `daave`: Step width for average NTD when (`aventd=true`)
-* `daind`: Step width for individual NTD when (`aventd=true`)
+* `daind`: Scaling factor for step width of individual NTD when (`aventd=true`)
 * `tscale`: Temporal scaling for time in the polynomial functions (time [sec] is converted into [hour]/`tscale`, `tscale=10` by default)
 * `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` by default)
-* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.xyh"` by default)
-* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.zv"` by default)
+* `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.inp"` by default)
+* `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.inp"` by default)
 * `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` by default)
 * `fno0`: Output file name for logging  (`fno0=log.txt` by default)
 * `fno1`: Output file name for the sampled parameters after the burn-in period (`fno1=sample.out` by default)
@@ -46,16 +44,16 @@ Shallow gradients and gradient depth are constrained assuming prior Cauchy and n
 * `fno7`: Output file name for the estimated B-spline bases (`fno7=bspline.out` by default)
 
 # Example
-    pos_array_mcmcpvgc(lat,XDUCER_DEPTH,NPB,sgd=0.2)
+    static_array_mcmcgradc(lat,TR_DEPTH,NPB,sgd=0.2)
 """ 
-function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0.65,sgd=0.1; NSB=100::Int64,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,lscale=1.0,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.xyh"::String,fn3="ss_prof.zv"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String,aventd=false,daave=2.e-6,daind=10.0,tscale=10.0,ndelay=1::Int64)
-  println(stderr," === GNSS-A positioning: pos_array_mcmcpvgc  ===")
+function static_array_mcmcgradc(lat,TR_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0.65,sgd=0.1; NSB=100::Int64,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,lscale=1.0,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String,aventd=false,daave=2.e-6,daind=10.0,tscale=10.0,ndelay=1::Int64)
+  println(stderr," === GNSS-A positioning: static_array_mcmcgradc  ===")
   # --- Input check
-  if XDUCER_DEPTH < 0
-    error(" pos_array_mcmcpvgc: XDUCER_DEPTH must be positive")
+  if TR_DEPTH < 0
+    error(" static_array_mcmcgradc: TR_DEPTH must be positive")
   end
   if NPB < 1
-    error(" pos_array_mcmcpvgc: NPB must be more than 1")
+    error(" static_array_mcmcgradc: NPB must be more than 1")
   end
   if NSB > NPB
     NSB = NPB
@@ -65,7 +63,7 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
   place = pwd()
   open(fno0,"w") do out0 
   println(out0,time1)
-  println(out0,"pos_array_mcmcpvg.jl at $place")
+  println(out0,"static_array_mcmcgradc.jl at $place")
   nth = nthreads() # number of threads
   println(out0,"Number of threads: $nth")
   # --- Set parameters
@@ -73,7 +71,7 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
   NP0 = 13; NC = 18 # Number of fixed parameters
   println(out0,"Number_of_B-spline_knots: $NPB")
   println(out0,"Default_latitude: $lat")
-  println(out0,"XDUCER_DEPTH: $XDUCER_DEPTH")
+  println(out0,"TR_DEPTH: $TR_DEPTH")
   println(out0,"Number_of_MCMC_loop: $nloop")
   println(out0,"Burn_in_period: $nburn")
   println(out0,"Sampling_interval: $NA")
@@ -84,11 +82,11 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
   println(stderr," --- Read files")
   e = read_ant(fn1)
   numk, px, py, pz = read_pxppos(fn2)
-  z, v, nz_st, numz = read_prof(fn3,XDUCER_DEPTH)
+  z, v, nz_st, numz = read_prof(fn3,TR_DEPTH)
   num, nk, tp, t1, x1, y1, z1, h1, p1, r1, t2, x2, y2, z2, h2, p2, r2, nf = read_obsdata(fn4)
   NP, a0, a1, a2, da, list = read_initial(fn5)
   if z[end] < maximum(abs.(pz))
-    error(" pos_array_all: maximum water depth of $fn3 must be deeper than site depth of $fn2")
+    error(" static_array_mcmcgradc: maximum water depth of $fn3 must be deeper than site depth of $fn2")
   end
   a = copy(a0)
   # --- Average ntd
@@ -106,14 +104,14 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
     xd1[i], yd1[i], zd1[i] = anttena2tr(x1[i],y1[i],z1[i],h1[i],p1[i],r1[i],e)
     xd2[i], yd2[i], zd2[i] = anttena2tr(x2[i],y2[i],z2[i],h2[i],p2[i],r2[i],e)
   end
-  # --- Set mean xducer_height & TT corection
+  # --- Set mean tr_height & TT corection
   println(stderr," --- TT corection")
   println(out0,"Travel-time correction: $NC")
-  xducer_height = ( mean(zd1) + mean(zd2) ) / 2.0
-  println(stderr,"     xducer_height:",xducer_height)
+  tr_height = ( mean(zd1) + mean(zd2) ) / 2.0
+  println(stderr,"     tr_height:",tr_height)
   Tv0 = zeros(numk); Vd = zeros(numk); Vr = zeros(numk); cc = zeros(numk,NC)
   for k in 1:numk
-    Tv0[k], Vd[k], Vr[k], cc[k,1:NC], rms = ttcorrection(px[k],py[k],pz[k],xducer_height,z,v,nz_st,numz,XDUCER_DEPTH,lat)
+    Tv0[k], Vd[k], Vr[k], cc[k,1:NC], rms = ttcorrection(px[k],py[k],pz[k],tr_height,z,v,nz_st,numz,TR_DEPTH,lat)
     println(stderr,"     RMS for PxP-$k: ",rms)
     println(out0,"     RMS for PxP-$k: ",rms)
   end
@@ -148,8 +146,8 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
     tt[n] = (t1[n] + t2[n]) / 2.0
     td[n] = tbspline3(tt[n],ds,tb,b,NPB)
     # --- TT
-    tc1[n], vert1[n], hh11[n], hh12[n] = xyz2ttg_rapid(px[nk[n]]+a0[1],py[nk[n]]+a0[2],pz[nk[n]]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[nk[n]],Vd[nk[n]],Vr[nk[n]],xducer_height,cc[nk[n],1:NC])
-    tc2[n], vert2[n], hh21[n], hh22[n] = xyz2ttg_rapid(px[nk[n]]+a0[1],py[nk[n]]+a0[2],pz[nk[n]]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[nk[n]],Vd[nk[n]],Vr[nk[n]],xducer_height,cc[nk[n],1:NC])
+    tc1[n], vert1[n], hh11[n], hh12[n] = xyz2ttg_rapid(px[nk[n]]+a0[1],py[nk[n]]+a0[2],pz[nk[n]]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[nk[n]],Vd[nk[n]],Vr[nk[n]],tr_height,cc[nk[n],1:NC])
+    tc2[n], vert2[n], hh21[n], hh22[n] = xyz2ttg_rapid(px[nk[n]]+a0[1],py[nk[n]]+a0[2],pz[nk[n]]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[nk[n]],Vd[nk[n]],Vr[nk[n]],tr_height,cc[nk[n],1:NC])
     xd[n] = (xd1[n]+xd2[n])/2000 ; yd[n]=(yd1[n]+yd2[n])/2000
     vert[n] = (vert1[n] + vert2[n]) / 2.0
     hh1[n] = (hh11[n] + hh21[n]) / 2.0
@@ -198,26 +196,26 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
       if iact == 0
         nss = Vector(14:NP)
         for i in shuffle(nss)[1:NSB]
-          a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
+          a[i] = perturbation_param(a0[i],da[i],a1[i],a2[i])
         end
         for i in [1 2 3 6]
-          a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
+          a[i] = perturbation_param(a0[i],da[i],a1[i],a2[i])
         end
         if n >= ndelay
-          a[12] = perturbation_single(a0[12],da[12],a1[12],a2[12])
+          a[12] = perturbation_param(a0[12],da[12],a1[12],a2[12])
         end
         if aventd == true
-          a[14:NP] = perturbation_single.(a[14:NP],daave,a1[14:NP],a2[14:NP],dr=(rand()-0.5)*2)
+          a[14:NP] = perturbation_param.(a[14:NP],daave,a1[14:NP],a2[14:NP],dr=(rand()-0.5)*2)
         end
       else
         for i in 7:11
-          a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
+          a[i] = perturbation_param(a0[i],da[i],a1[i],a2[i])
         end
         for i in [4 5]
-          a[i] = perturbation_single(a0[i],da[i],a1[i],a2[i])
+          a[i] = perturbation_param(a0[i],da[i],a1[i],a2[i])
         end
         if n >= ndelay
-          a[13] = perturbation_single(a0[13],da[13],a1[13],a2[13])
+          a[13] = perturbation_param(a0[13],da[13],a1[13],a2[13])
         end
       end
       # --- Calculate PDF
@@ -232,8 +230,8 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
         tt[i] = (t1[i] + t2[i]) / 2.0
         td[i] = tbspline3(tt[i],ds,tb,b,NPB)
         # --- TT
-        tc1[i], vert1[i], hh11[i], hh12[i] = xyz2ttg_rapid(px[nk[i]]+a[1],py[nk[i]]+a[2],pz[nk[i]]+a[3],xd1[i],yd1[i],zd1[i],Rg,Tv0[nk[i]],Vd[nk[i]],Vr[nk[i]],xducer_height,cc[nk[i],1:NC])
-        tc2[i], vert2[i], hh21[i], hh22[i] = xyz2ttg_rapid(px[nk[i]]+a[1],py[nk[i]]+a[2],pz[nk[i]]+a[3],xd2[i],yd2[i],zd2[i],Rg,Tv0[nk[i]],Vd[nk[i]],Vr[nk[i]],xducer_height,cc[nk[i],1:NC])
+        tc1[i], vert1[i], hh11[i], hh12[i] = xyz2ttg_rapid(px[nk[i]]+a[1],py[nk[i]]+a[2],pz[nk[i]]+a[3],xd1[i],yd1[i],zd1[i],Rg,Tv0[nk[i]],Vd[nk[i]],Vr[nk[i]],tr_height,cc[nk[i],1:NC])
+        tc2[i], vert2[i], hh21[i], hh22[i] = xyz2ttg_rapid(px[nk[i]]+a[1],py[nk[i]]+a[2],pz[nk[i]]+a[3],xd2[i],yd2[i],zd2[i],Rg,Tv0[nk[i]],Vd[nk[i]],Vr[nk[i]],tr_height,cc[nk[i],1:NC])
         xd[i] = (xd1[i]+xd2[i])/2000 ; yd[i] = (yd1[i]+yd2[i])/2000
         vert[i] = (vert1[i] + vert2[i]) / 2.0
         hh1[i] = (hh11[i] + hh21[i]) / 2.0
@@ -322,8 +320,8 @@ function pos_array_mcmcpvgc(lat,XDUCER_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
     k = nk[n]  # PXP number
     tt[n] = (t1[n] + t2[n]) / 2.0
     # --- Calculate TT
-    tc1, vert1, hh11, hh12 = xyz2ttg_rapid(px[k]+a[1],py[k]+a[2],pz[k]+a[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
-    tc2, vert2, hh21, hh22 = xyz2ttg_rapid(px[k]+a[1],py[k]+a[2],pz[k]+a[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],xducer_height,cc[k,1:NC])
+    tc1, vert1, hh11, hh12 = xyz2ttg_rapid(px[k]+a[1],py[k]+a[2],pz[k]+a[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+    tc2, vert2, hh21, hh22 = xyz2ttg_rapid(px[k]+a[1],py[k]+a[2],pz[k]+a[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
     xd = (xd1[n]+xd2[n])/2000 ; yd = (yd1[n]+yd2[n])/2000
     vert = (vert1 + vert2) / 2.0
     hh1 = (hh11 + hh21) / 2.0

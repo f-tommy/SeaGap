@@ -7,12 +7,12 @@
 
 export make_initial
 """
-    make_initial(;fn1,fn2,fn3,fno,error_scale)
+    make_initial(;fn1,fn2,fn3,fno,error_scale,tscale)
 
-Make an initial data file `fno` for `mcmcpvg()` or `mcmcpvgc()` using initial transponder positions `fn1` and the estimation results (`fn2` and `fn3`).
+Make an initial data file `fno` for `static_array_mcmcgrad()` or `static_array_mcmcgradc()` using initial transponder positions `fn1` and the estimation results (`fn2` and `fn3`).
 The step widths for mcmc are determined as standard deviations / `error_scale`.
 
-* `fn1`: Seafloor transponder position file (`fn1="pxp-ini.xyh"` by default)
+* `fn1`: Seafloor transponder position file (`fn1="pxp-ini.inp"` by default)
 * `fn2`: NTD estimation result file obtained by `pos_array_all` (`fn2="residual.out"` by default)
 * `fn3`: Estimation result file for all parameters obtained by `pos_array_all` (`fn3="solve.out"` by default)
 * `error_scale`: Scaling factor for step widths (`error_scale=5.0` by default)
@@ -21,8 +21,8 @@ The step widths for mcmc are determined as standard deviations / `error_scale`.
 # Example
     make_initial(error_scale=6.0)
 """
-function make_initial(;fn1="pxp-ini.xyh"::String,fn2="residual.out"::String,fn3="solve.out"::String,fno="initial.inp"::String,error_scale = 5.0,tscale=10.0)
-  println(stderr," === Make initial for pos_array_mcmcpvg  ===")
+function make_initial(;fn1="pxp-ini.inp"::String,fn2="residual.out"::String,fn3="solve.out"::String,fno="initial.inp"::String,error_scale = 5.0,tscale=10.0)
+  println(stderr," === Make initial for static_array_mcmcgrad  ===")
   # --- Start log
   time1 = now()
   place = pwd()

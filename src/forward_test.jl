@@ -9,11 +9,11 @@
 
 export forward_test
 """
-    forward_test(lat,XDUCER_DEPTH,pos; txtout,fn,fno)                                                                 
+    forward_test(lat,TR_DEPTH,pos; txtout,fn,fno)                                                                 
 Forward calculation for trave-times (See Tutorials in the online manual).
 
 * `lat`: Site latitude
-* `XDUCER_DEPTH`: Transducer depth from the sea-surface
+* `TR_DEPTH`: Transducer depth from the sea-surface
 * `pos`: A transponder position (3 components vector)
 * `txtout`: if `txtout=true`, calculation results are written in `fno`
 * `fn`: Input sound speed structure file
@@ -22,10 +22,10 @@ Forward calculation for trave-times (See Tutorials in the online manual).
 # Example
     forward_test(38, 3.0, [1000,1000,-3000],txtout=false)
 """
-function forward_test(lat, XDUCER_DEPTH, pos::Vector{}; txtout=false::Bool,fn="ss_prof.zv"::String,fno="synthetic.txt"::String)
+function forward_test(lat, TR_DEPTH, pos::Vector{}; txtout=false::Bool,fn="ss_prof.inp"::String,fno="synthetic.txt"::String)
 # --- Set transponder position
   px = pos[1]; py = pos[2]; pz = pos[3]
-  z, v, nz_st, numz = read_prof(fn,XDUCER_DEPTH)
+  z, v, nz_st, numz = read_prof(fn,TR_DEPTH)
   Rg, Rl = localradius(lat)
   if z[end] < abs(pz)                                                 
     error(" forward_test: maximum water depth of $fn3 must be deeper than site depth of $fn2")
@@ -38,7 +38,7 @@ function forward_test(lat, XDUCER_DEPTH, pos::Vector{}; txtout=false::Bool,fn="s
     # --- Set z-value randomly
     zd = rand()*-5.0
     # --- Calculate TT
-    tc, Nint, vert = xyz2tt(px,py,pz,xd,yd,zd,z,v,nz_st,numz,Rg,XDUCER_DEPTH)
+    tc, Nint, vert = xyz2tt(px,py,pz,xd,yd,zd,z,v,nz_st,numz,Rg,TR_DEPTH)
     push!(xdv,xd); push!(ydv,yd); push!(zdv,zd); push!(tcv,tc)
   end
   if txtout == true
