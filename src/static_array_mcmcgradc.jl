@@ -167,7 +167,9 @@ function static_array_mcmcgradc(lat,TR_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
   rms01 = sqrt(hod01/num)
   rms02 = sqrt(hod02/num)
   dhod01 = -(a0[6]-gd0)^2/(2*sgd^2)
-  dhod02 = 1/pi*ss/(a0[4]^2+ss^2) + 1/pi*ss/(a0[5]^2+ss^2)
+  dhod02 = -a0[4]^2/(2*ss^2)
+  dhod02 += -a0[5]^2/(2*ss^2)
+  #dhod02 = 1/pi*ss/(a0[4]^2+ss^2) + 1/pi*ss/(a0[5]^2+ss^2)
   hod01 = -num/2*log((10^a0[12])^2) - hod01/(2*(10^a0[12])^2)
   hod02 = -num/2*log((10^a0[13])^2) - hod02/(2*(10^a0[13])^2)
   println(stderr,"   RMS; $rms01, $dhod01, $dhod02, PDF1: $hod01, PDF2: $hod02")
@@ -253,7 +255,9 @@ function static_array_mcmcgradc(lat,TR_DEPTH=3.0,NPB=100::Int64, ss=3.e-4, gd0=0
       rms2 = sqrt(hod2/num)
       # Constraint by prior distribution
       dhod1 = -(a[6]-gd0)^2/(2*sgd^2)
-      dhod2 = 1/pi*ss/(a[4]^2+ss^2) + 1/pi*ss/(a[5]^2+ss^2)
+      dhod2 = -a[4]^2/(2*ss^2)
+      dhod2 += -a[5]^2/(2*ss^2)
+      #dhod2 = 1/pi*ss/(a[4]^2+ss^2) + 1/pi*ss/(a[5]^2+ss^2)
       #
       hod1 = -num/2*log((10^a[12])^2) - hod1/(2*(10^a[12])^2)
       hod2 = -num/2*log((10^a[13])^2) - hod2/(2*(10^a[13])^2)

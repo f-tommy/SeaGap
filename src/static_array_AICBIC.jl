@@ -4,14 +4,13 @@
 
 export static_array_AICBIC
 """
-    static_array_AICBIC(r1,r2,r3,lat,TR_DEPTH,NPB; fn1,fn2,fn3,fn4,eps,ITMAX,delta_pos,delete,fno0,fno)
+    static_array_AICBIC(r1,r2,r3,lat,TR_DEPTH; fn1,fn2,fn3,fn4,eps,ITMAX,delta_pos,delete,fno0,fno)
 
 Perform static array positioning and calculate AIC and BIC values for various number of temporal B-spline bases.
 Range for the number of temporal B-spline bases to be investigated is given by (`r1`,`r2`) with interval of `r3`.
 
 * `lat`: Site latitude
 * `TR_DEPTH`: Transducer depth from the sea-surface
-* `NPB`: Number of temporal B-spline bases
 * `eps`: Convergence threshold (`eps=1.e-4` by default)
 * `IMAX`: Maximum number of iterations (`IMAX=50` by default)
 * `delta_pos`: Infinitesimal amount of the array displacements to calculate the Jacobian matrix (`delta_pos=1.e-4`)

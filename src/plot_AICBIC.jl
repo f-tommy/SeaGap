@@ -9,7 +9,7 @@ Make a figure plotting `type` (AIC or BIC) values searched by `static_array_AICB
 
 * `type`: "AIC" or "BIC" (`type="BIC"` by default)
 * `fno`: Output figure name (`fno="AICBIC_search.pdf"` by default)
-* `fn`: Input file name obtained by `pos_array_all_AICBIC()` (`fn="AICBIC_search.out"` by default)
+* `fn`: Input file name obtained by `static_array_s_AICBIC()` (`fn="AICBIC_search.out"` by default)
 * `lmargin`: Margin of figure for left edge (`lmargin=3.5` by default)
 * `rmargin`: Margin of figure for right edge (`rmargin=1.5` by default)
 * `tmargin`: Margin of figure for top edge (`tmargin=1.5` by default)

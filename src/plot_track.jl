@@ -90,11 +90,11 @@ function plot_timetrack(xrange=(-3000,3000),yrange=(-3000,3000),zrange=(0,10) ;a
   if autoscale == false
     p1 = scatter(t,x,xlims=(ts,te),ylims=xrange,ylabel="Easting [m]",framestyle=:box,legend=:none,markershape=:cross,markersize=ms,label="",xformatter=_->"",top_margin=Plots.Measures.Length(:mm,tmargin),bottom_margin=Plots.Measures.Length(:mm,bmargin0))
     p2 = scatter(t,y,xlims=(ts,te),ylims=yrange,ylabel="Northing [m]",framestyle=:box,legend=:none,markershape=:cross,markersize=ms,label="",xformatter=_->"",top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin0))
-    p3 = scatter(t,z,xlims=(ts,te),ylims=zrange,ylabel="Uplifting [m]",framestyle=:box,legend=:none,markershape=:cross,markersize=ms,top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin))
+    p3 = scatter(t,z,xlims=(ts,te),ylims=zrange,ylabel="Height [m]",framestyle=:box,legend=:none,markershape=:cross,markersize=ms,top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin))
   else
     p1 = scatter(t,x,xlims=(ts,te),ylabel="Easting [m]",framestyle=:box,legend=:none,markershape=:cross,markersize=ms,label="",xformatter=_->"",top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin0))
     p2 = scatter(t,y,xlims=(ts,te),ylabel="Northing [m]",framestyle=:box,legend=:none,markershape=:cross,markersize=ms,label="",xformatter=_->"",top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin0))
-    p3 = scatter(t,z,xlims=(ts,te),xlabel="Time [hour]",framestyle=:box,ylabel="Uplift [m]",legend=:none,markershape=:cross,markersize=ms,top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin))
+    p3 = scatter(t,z,xlims=(ts,te),xlabel="Time [hour]",framestyle=:box,ylabel="Height [m]",legend=:none,markershape=:cross,markersize=ms,top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin))
   end
   plt = plot(p1,p2,p3,layout=(3,1),size=plot_size,guidefontsize=gfs,left_margin=Plots.Measures.Length(:mm,lmargin),right_margin=Plots.Measures.Length(:mm, rmargin))
   if show == false

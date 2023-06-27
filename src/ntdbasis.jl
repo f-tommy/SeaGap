@@ -1,5 +1,5 @@
 # === Make temporal points for bspline interval
-export mktbasis, tbspline3, retrieveb
+export mktbasis, tbspline3, retrieveb, fill_bspline_coef
 
 """
     mktbasis(NPB,t1,t2,NN)
@@ -123,4 +123,16 @@ function retrieveb(NPB::Int64,tb,ds,t1,t2,num::Int64)
   end
   println(stderr,"     B-spline knot: $NPB -> $NPBV")
   return Int(NPBV), Int.(round.(id))
+end
+
+function fill_bspline_coef(NPB,id,a,cons)
+  b = zeros(NPB)
+  sum = 0.0
+  for m in 1:NPB
+    if id[m] >= 1
+      b[m] = cons + a[id[m]]
+      sum += b[m]*b[m]
+    end
+  end
+  return b,sum
 end

@@ -14,7 +14,7 @@ export plot_histogram
 Make a figure file of histograms from the sampling results obtained by `static_array_mcmcgrad()` or `static_array_mcmcgradc()`.
 
 * `NPB`: Number of 3d B-spline bases
-* `fn0`: Inversion results by `pos_array_all()` ("solve.out" by default), which is used when you'd like to plot the `static_array()` results on the histogram
+* `fn0`: Inversion results by `static_array()` ("solve.out" by default), which is used when you'd like to plot the `static_array()` results on the histogram
 * `fn`: Input file ("sample.out" by default)
 * `fno`: Output figure name (note that this file must be a PDF file: "histogram.pdf" by default)
 * `all`: if `all=true`, histograms for all parameters are drawn; if `all=false`, histograms for major six parameters (array displacements, shallow gradients, gradient depth) (`all=false` by default)

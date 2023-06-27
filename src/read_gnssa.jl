@@ -4,7 +4,7 @@
 =#
 #using DelimitedFiles
 
-export read_matrix,read_info, read_prof, read_ant, read_gps, read_initial, read_jttq, read_pxppos, read_obsdata
+export read_matrix,read_info, read_prof, read_ant, read_gps, read_initial, read_jttq, read_pxppos, read_obsdata, read_obsdata_s,read_initial_nolimit
 # === Read matrix
 """
     read_matrix(filename)
@@ -165,6 +165,35 @@ function read_initial(filename::String)
   return np, a0, a1, a2, da, list
 end
 
+"""
+    read_initial_nolimit(filename)
+
+Read a file `filename` for initial values used in `static_array_mcmc_all`, and store them as arrangements.
+
+Output:
+* `np`: Number of data
+* `a0`: Initial value
+* `da`: Step width
+* `list`: Parameter name
+
+# Example
+    np, a0, da, list = read_initial("initial.inp")
+"""
+function read_initial_nolimit(filename::String)
+  a = DelimitedFiles.readdlm(filename)
+  np = size(a)[1]
+  a0 = Float64.(a[1:np,1])
+  da = Float64.(a[1:np,2])
+  list = a[1:np,3]
+  println(stderr," --- Read $filename: $np")
+  if np < 11
+    error("  read_initial: number of lines must be more than 11")
+  end
+  return np, a0, da, list
+end
+
+
+
 # === Read jttq positions
 """
     read_jttq(filename,k,tp,tt0,tt,qq)
@@ -280,6 +309,52 @@ function read_obsdata(filename::String)
     error(" read_obsdata: number of lines must be more than 3")
   end
   return num,nk,tp,t1,x1,y1,z1,h1,p1,r1,t2,x2,y2,z2,h2,p2,r2,nf
+end
+
+"""
+    read_obsdata_tr(filename)
+
+Read a file `filename` for seafloor transponder positions, and store them as arrangements.
+
+Output:
+* `num`: Total number of data
+* `nk`: Transponder number
+* `tp`: Travel-Time [sec]
+* `t1`: Signal transmitting time [sec]
+* `xd1`: sea-surface transducer when transmitting [m]
+* `yd1`: NS sea-surface transducer when transmitting [m]
+* `zd1`: UD sea-surface transducer position when transmitting [m]
+* `t2`: Signal recieving time [sec]
+* `xd2`: EW sea-surface transducer position when recieving [m]
+* `yd2`: NS sea-surface transducer position when recieving [m]
+* `zd2`: UD sea-surface transducer position when recieving [m]
+* `nf`: Shot group number for `kinematic_array()`
+* `ids`: Sea-surface number
+
+# Example
+    num,nk,tp,t1,xd1,yd1,zd1,t2,xd2,yd2,zd2,nf,ids = read_obsdata_tr("obsdata_tr.inp")
+"""
+function read_obsdata_tr(filename::String)
+  # --- Read observation data
+  a = DelimitedFiles.readdlm(filename)
+  num = size(a)[1]
+  nk = Int.(round.(a[1:num,1]))  # PxP num
+  tp = a[1:num,2]                # Obs TT
+  t1 = a[1:num,3]                # Shot time
+  xd1 = a[1:num,4]                # Shot pos-X
+  yd1 = a[1:num,5]                # Shot pos-Y
+  zd1 = a[1:num,6]                # Shot pos-Z
+  t2 = a[1:num,7]               # Recieve time
+  xd2 = a[1:num,8]               # Recieve pos-X
+  yd2 = a[1:num,9]               # Recieve pos-Y
+  zd2 = a[1:num,10]               # Recieve pos-Z
+  nf = Int.(round.(a[1:num,11])) # Flag for kinematic_array
+  ids = Int.(round.(a[1:num,12])) # Flag for kinematic_array
+  println(stderr," --- Read $filename: $num")
+  if num < 3
+    error(" read_obsdata: number of lines must be more than 3")
+  end
+  return num,nk,tp,t1,xd1,yd1,zd1,t2,xd2,yd2,zd2,nf,ids
 end
 
 """

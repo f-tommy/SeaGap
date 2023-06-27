@@ -1,6 +1,8 @@
 #using Random
 
 export perturbation_param
+export perturbation_param_nolimit
+export perturbation_along
 """
     perturbation_param(x0,dx,x1,x2)
 
@@ -17,4 +19,23 @@ function perturbation_param(x0,dx,x1,x2; dr=(rand()-0.5)*2)
     x = x0
   end
   return x
+end
+
+function perturbation_param_nolimit(x0,dx; dr=(rand()-0.5)*2)
+  x = x0 + dr*dx
+  return x
+end
+
+function perturbation_along(x0,dx,x1,x2,y0,dy,y1,y2)
+  dr = (dx + dy)/2.0
+  delta = (rand()-0.5)*2.0*dr
+  x = x0 + delta*rand()
+  y = y0 + delta*rand()
+  if x < x1 || x > x2
+    x = x0
+  end
+  if y < y1 || y > y2
+    y = y0
+  end
+  return x,y
 end
