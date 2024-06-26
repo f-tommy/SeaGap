@@ -304,11 +304,12 @@ function read_obsdata(filename::String)
   p2 = a[1:num,15]               # Recieve pitch
   r2 = a[1:num,16]               # Receive roll
   nf = Int.(round.(a[1:num,17])) # Flag for kinematic_array
+  nds = Int.(round.(a[1:num,18])) # Flag for platform
   println(stderr," --- Read $filename: $num")
   if num < 3
     error(" read_obsdata: number of lines must be more than 3")
   end
-  return num,nk,tp,t1,x1,y1,z1,h1,p1,r1,t2,x2,y2,z2,h2,p2,r2,nf
+  return num,nk,tp,t1,x1,y1,z1,h1,p1,r1,t2,x2,y2,z2,h2,p2,r2,nf,nds
 end
 
 """

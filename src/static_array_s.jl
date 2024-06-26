@@ -2,56 +2,65 @@
 #using Statistics
 #using LinearAlgebra
 
-export static_array
+export static_array_s
 """
-    static_array(lat,TR_DEPTH,NPB; fn1,fn2,fn3,fn4,eps,ITMAX,delta_pos,fno0,fno1,fno2,fno3,fno4,fno5)
+    static_array_s(lat,TR_DEPTH,alpha,NPB1,NPB2; fn1,fn2,fn3,fn4,eps,ITMAX,delta_pos,fno0,fno1,fno2,fno3,fno4,fno5,fno6)
 
-Perform static array positioning with a fixed number of temporal B-spline bases.
+Perform static array positioning considering shallow gradients.
+Long-period and short-period NTDs are modeled by small (NPB1) and large (NPB2) numbers of 3d B-spline bases.
+Norm of S-NTD is constrained and is controlled by hyper-paramter (alpha).
 
 * `lat`: Site latitude
 * `TR_DEPTH`: Transducer depth from the sea-surface
-* `NPB`: Number of temporal B-spline bases
+* `alpha`: Hyper-parameter for S-NTD norms
+* `NPB1`: Number of L-NTD B-spline bases
+* `NPB2`: Number of S-NTD B-spline bases
 * `eps`: Convergence threshold (`eps=1.e-4` by default)
 * `IMAX`: Maximum number of iterations (`IMAX=50` by default)
 * `delta_pos`: Infinitesimal amount of the array displacements to calculate the Jacobian matrix (`delta_pos=1.e-4`)
-* `fn1`: Input file name for an offset between a GNSS antenna and a transducer on a sea-surface platform [m] (`fn1="tr-ant.inp"` by default)
+* `fn1`: Input file name for the antenna-TR offset (`fn1="tr-ant.inp"` by default)
 * `fn2`: Input file name for the initial seafloor transponder positions [m] (`fn2="pxp-ini.inp"` by default)
 * `fn3`: Input file name for the initial sound speed profile (`fn3="ss_prof.inp"` by default)
-* `fn4`: Input file name for the basic observational data  (`fn4="obsdata.inp"` by default)
+* `fn4`: Input file name for the observational data (`fn1="obsdata.inp"` by default)
 * `fno0`: Output file name for logging  (`fno0=log.txt` by default)
 * `fno1`: Output file name for the estimated parameters and their stds (`fno1=solve.out` by default)
 * `fno2`: Output file name for the estimated array displacement (`fno2=position.out` by default)
-* `fno3`: Output file name for the residuals (`fno3=residual.out` by default)
-* `fno4`: Output file name for the estimated B-spline bases (`fno4=bspline.out` by default)
-* `fno5`: Output file name for the calculated AIC and BIC values (`fno5=AICBIC.out` by default)
+* `fno3`: Output file name for the residuals (`fno3=residual_sdls.out` by default)
+* `fno4`: Output file name for the estimated B-spline bases (`fno4=S-NTD.out` by default)
+* `fno5`: Output file name for the calculated ABIC values (`fno5=ABIC.out` by default)
+* `fno6`: Output file name for the gradients (`fno6=gradient.out` by default)
 
 # Example
-    static_array(36.2,0.8,41)
+    static_array_s(36.2,[0.8],-0.5,5,100)
 """
-######
-function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual.out"::String,fno4="bspline.out"::String,fno5="AICBIC.out"::String)
-  println(stderr," === GNSS-A positioning: static_array  ===")
+function static_array_s(lat,TR_DEPTH::Vector{Float64},alpha=0.0,NPB1=5,NPB2=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual_sdls.out"::String,fno4="S-NTD.out"::String,fno5="ABIC.out"::String,fno6="gradient.out"::String)
+  println(stderr," === GNSS-A positioning: static_array_s  ===")
   # --- Input check
   nds0 = size(TR_DEPTH)[1]
-  if NPB < 1
-    error(" static_array: NPB must be more than 1")
+  if NPB1 < 2
+    error(" static_array_s: NPB1 must be more than 4")
+  end
+  if NPB2 < 2
+    error(" static_array_s: NPB2 must be more than 4")
   end
   # --- Start log
   time1 = now()
   place = pwd()
   open(fno0,"w") do out0 
   println(out0,time1)
-  println(out0,"static_array.jl at $place")
+  println(out0,"static_array_s.jl at $place")
   # --- Set parameters
   println(stderr," --- Set parameters")
-  NP0 = 3; NC = 18 # Number of fixed parameters
+  NP0 = 5; NC = 18 # Number of fixed parameters
   dx = delta_pos; dy = delta_pos; dz = delta_pos
   println(out0,"Convergence_eps: $eps")
-  println(out0,"Number_of_B-spline_knots: $NPB")
+  println(out0,"Hyper-parameter_for_S-NTD: 10^ $alpha")
+  println(out0,"Number_of_B-spline_knots1: $NPB1")
+  println(out0,"Number_of_B-spline_knots2: $NPB2")
   println(out0,"Default_latitude: $lat")
   println(out0,"Maximum_iterations: $ITMAX")
   println(out0,"Delta_position: $delta_pos")
-######
+  println(out0,"TR_DEPTH: $TR_DEPTH")
   for n in 1:nds0
     println(out0,"TR_DEPTH-$n: $TR_DEPTH[$n]")
   end
@@ -61,16 +70,12 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
   e = read_ant(fn1)
   numk, px, py, pz = read_pxppos(fn2)
   z, v, nz_st, numz = read_prof(fn3,TR_DEPTH0)
-########
   num, nk, tp, t1, x1, y1, z1, h1, p1, r1, t2, x2, y2, z2, h2, p2, r2, nf, ids = read_obsdata(fn4)
-########
   if z[end] < maximum(abs.(pz))                                                 
     error(" static_array: maximum water depth of $fn3 must be deeper than site depth of $fn2")
   end
-########
   nds = size(e)[2]
   println(out0,"Number_of_sea-surface-platforms: $nds")
-########
 
 # --- Formatting --- #
   println(stderr," --- Initial formatting")
@@ -79,12 +84,10 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
   xd1 = zeros(num); xd2 = zeros(num)
   yd1 = zeros(num); yd2 = zeros(num)
   zd1 = zeros(num); zd2 = zeros(num)
-########
   for i in 1:num
     xd1[i], yd1[i], zd1[i] = anttena2tr(x1[i],y1[i],z1[i],h1[i],p1[i],r1[i],e[:,ids[i]])
     xd2[i], yd2[i], zd2[i] = anttena2tr(x2[i],y2[i],z2[i],h2[i],p2[i],r2[i],e[:,ids[i]])
   end
-########
   # --- Set mean tr_height & TT corection
   println(stderr," --- TT corection")
   println(out0,"Travel-time correction: $NC")
@@ -98,14 +101,22 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
   end
   # --- Set B-spline function
   println(stderr," --- NTD basis")
-  smin, smax, ds, tb = mktbasis(NPB,t1,t2,num)
-  NPBV, id = retrieveb(NPB,tb,ds,t1,t2,num) 
+  smin1, smax1, ds1, tb1 = mktbasis(NPB1,t1,t2,num)
+  NPBV1, id1 = retrieveb(NPB1,tb1,ds1,t1,t2,num) 
+  smin2, smax2, ds2, tb2 = mktbasis(NPB2,t1,t2,num)
+  NPBV2, id2 = retrieveb(NPB2,tb2,ds2,t1,t2,num) 
   # --- Initialize
-  NP = NP0 + NPBV
+  NP = NP0 + NPBV1 + NPBV2
   d = zeros(num); H = zeros(num,NP); a0 = zeros(NP); a = zeros(NP)
   dc = zeros(num); dr = zeros(num); delta = 1.e6; rms = 1.e6
-  sigma2 = 0.0; aic = 0.0; bic = 0.0; Hinv = zeros(NP,NP)
+  G0 = zeros(NP,NP)
+  d1 = zeros(num); d2 = zeros(num); d3 = zeros(num)
+  xd = zeros(num); yd = zeros(num)
+  sigma2 = 0.0; abic = 0.0; Hinv = zeros(NP,NP)
   Rg, Rl = localradius(lat)
+  for i in NP0+NPBV1+1:NP
+    G0[i,i] = 10.0^alpha
+  end
 
 # --- Main Anlysis --- #
   println(stderr," === Inversion")
@@ -136,29 +147,43 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
       tcz2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3]+dz,xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tcz = tcz1 + tcz2
       # --- Fill matrix
+      xd[n] = (xd1[n]+xd2[n])/2000 ; yd[n] = (yd1[n]+yd2[n])/2000
       H[n,1] = (tcx-tc)/dx*vert; H[n,2]=(tcy-tc)/dy*vert; H[n,3]=(tcz-tc)/dz*vert
+      H[n,4] = xd[n]; H[n,5] = yd[n]
       if it == 1
-        for m in 1:NPB
-          if id[m] >= 1
-            b0 = zeros(NPB)
+        for m in 1:NPB1
+          if id1[m] >= 1
+            b0 = zeros(NPB1)
             b0[m] = 1.0
-            H[n,NP0+id[m]] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b0,NPB)
+            H[n,NP0+id1[m]] = tbspline3((t1[n]+t2[n])/2.0,ds1,tb1,b0,NPB1)
+          end
+        end
+        for m in 1:NPB2
+          if id2[m] >= 1
+            b0 = zeros(NPB2)
+            b0[m] = 1.0
+            H[n,NP0+NPBV1+id2[m]] = tbspline3((t1[n]+t2[n])/2.0,ds2,tb2,b0,NPB2)
           end
         end
       end
     end
-    Hinv = inv(transpose(H)*H)
+    Horg = transpose(H)*H+G0
+    Hinv = inv(Horg)
     a = Hinv*transpose(H)*d
     dc = H*a
     dr = d - dc
+    a1 = zeros(NP); a2 = zeros(NP); a3 = zeros(NP)
+    a1[4] = a[4]; a1[5] = a[5]
+    a2[NP0+1:NP0+NPBV1] = a[NP0+1:NP0+NPBV1]
+    a3[NP0+NPBV1+1:NP] = a[NP0+NPBV1+1:NP]
+    d1 = H*a1; d2 = H*a2; d3 = H*a3
     rms = std(dr)
-    sa = num * rms^2
+    sa = LinearAlgebra.dot(dr,dr)
     sigma2 = sa / (num-NP)
-    aic = num*log(sa/num) + NP*2.0
-    bic = num*log(sa/num) + NP*log(num)
-    delta = std(a[1:NP0])
-    a0[1:NP0] += a[1:NP0]
-    a0[NP0+1:NP] = a[NP0+1:NP]
+    abic = num*log(sa) - NPBV2*log(10.0^alpha) + logdet(Horg)
+    delta = std(a[1:3])
+    a0[1:3] += a[1:3]
+    a0[4:NP] = a[4:NP]
     println(stderr," Temporal position: $(a0[1:3]), $delta, $rms")
     println(out0,"     Iteration: $it $(a0[1]) $(a0[2]) $(a0[3]) $delta $rms")
     it += 1
@@ -170,17 +195,26 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
   tc = (t1[1] + t2[num]) / 2.0
   a = transpose(a0[1:3])
   # --- Fill NTD basis
-  b = zeros(NPB)
-  for m in 1:NPB
-    if id[m] >= 1
-      b[m] = a0[NP0+id[m]]
+  b1 = zeros(NPB1)
+  for m in 1:NPB1
+    if id1[m] >= 1
+      b1[m] = a0[NP0+id1[m]]
     else
-      b[m] = 0.0
+      b1[m] = 0.0
+    end
+  end
+  b2 = zeros(NPB2)
+  for m in 1:NPB2
+    if id2[m] >= 1
+      b2[m] = a0[NP0+NPBV1+id2[m]]
+    else
+      b2[m] = 0.0
     end
   end
   td = zeros(num)
   for n in 1:num
-    td[n] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b,NPB)
+    td[n] = tbspline3((t1[n]+t2[n])/2.0,ds1,tb1,b1,NPB1)
+    td[n] += tbspline3((t1[n]+t2[n])/2.0,ds2,tb2,b2,NPB2)
   end
 
 # --- Output --- #
@@ -192,16 +226,21 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
     Base.print_array(out,hcat(tc,a,transpose(cv[1:3])))
     println(out,"")
   end
+  d0=zeros(num)
   open(fno3,"w") do out
-    Base.print_array(out,hcat((t1+t2)/2.0,nk,d,dc,dr))
+    Base.print_array(out,hcat((t1+t2)/2.0,nk,(xd1+xd2)/2.0,(yd1+yd2)/2.0,(zd1+zd2)/2.0,d,dc,dr,d1,d0,d2,d3,ids))
     println(out,"")
   end
   open(fno4,"w") do out
-    Base.print_array(out,hcat(collect(1:NPB),id,tb,b))
+    Base.print_array(out,hcat(collect(1:NPB2),id2,tb2,b2))
     println(out,"")
   end
-  open(fno5,"w") do out
-    println(out,"$NPB $aic $bic")
+  open(fno5,"a") do out
+    println(out,"$alpha $NPB1 $NPB2 0.0 $abic")
+  end
+  open(fno6,"w") do out
+    println(out,"# S-Grad(EW), S-Grad(NS) D-Grad(EW) D-Grad(NS) Grad-Depth")
+    println(out,"$(a0[4]) $(a0[5]) NA NA NA")
   end
 
 # --- Close process --- #

@@ -23,11 +23,11 @@ Output:
     smin, smax, ds, tb = mktbasis(NPB,t1,t2,num)
 """
 function mktbasis(NPB::Int64,t1,t2,NN::Int64)
-  if NPB < 1
-    error("mktbasis: number of B-spline basis must be integer and over 1")
+  if NPB < 3
+    error("mktbasis: number of B-spline basis must be integer and over 3")
   end
-  if NN < 1
-    error("mktbasis: number of data must be over 1")
+  if NN < 5
+    error("mktbasis: number of data must be over 5")
   end
   smin = findmin(t1)[1]
   smax = findmax(t2)[1]

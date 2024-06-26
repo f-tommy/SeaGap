@@ -8,6 +8,7 @@ export static_array_TR
 
 Perform static array positioning with optimizing offset between a GNSS antenna and a transducer on a sea-surface platform.
 
+* `key`: Sea surface plataform numebr to be optimized
 * `lat`: Site latitude
 * `TR_DEPTH`: Transducer depth from the sea-surface
 * `NPB`: Number of temporal B-spline bases
@@ -29,12 +30,10 @@ Perform static array positioning with optimizing offset between a GNSS antenna a
 # Example
     static_array_TR(38.0,5.0,100,delta_offset=5.e-4)
 """
-function static_array_TR(lat, TR_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, delta_offset=1.e-4,fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual.out"::String,fno4="bspline.out"::String,fno5="tr-ant.out"::String)
+function static_array_TR(key, lat, TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, delta_offset=1.e-4,fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual.out"::String,fno4="bspline.out"::String,fno5="tr-ant.out"::String)
   println(stderr," === GNSS-A positioning: static_array_TR  ===")
+  nds0 = size(TR_DEPTH)[1]
   # --- Input check
-  if TR_DEPTH < 0
-    error(" static_array_TR: TR_DEPTH must be positive")
-  end
   if NPB < 1
     error(" static_array_TR: NPB must be more than 1")
   end
@@ -54,16 +53,21 @@ function static_array_TR(lat, TR_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::Str
   println(out0,"Maximum_iterations: $ITMAX")
   println(out0,"Delat_position: $delta_pos")
   println(out0,"Delat_offset: $delta_offset")
-  println(out0,"TR_DEPTH: $TR_DEPTH")
+  for n in 1:nds0
+    println(out0,"TR_DEPTH-$n: $TR_DEPTH[$n]")
+  end
+  TR_DEPTH0 = minimum(TR_DEPTH)
   # --- Read data
   println(stderr," --- Read files")
   e = read_ant(fn1)
   numk, px, py, pz = read_pxppos(fn2)
-  z, v, nz_st, numz = read_prof(fn3,TR_DEPTH)
-  num, nk, tp, t1, x1, y1, z1, h1, p1, r1, t2, x2, y2, z2, h2, p2, r2, nf = read_obsdata(fn4)
+  z, v, nz_st, numz = read_prof(fn3,TR_DEPTH0)
+  num, nk, tp, t1, x1, y1, z1, h1, p1, r1, t2, x2, y2, z2, h2, p2, r2, nf, ids = read_obsdata(fn4)
   if z[end] < maximum(abs.(pz))                                                 
     error(" static_array_TR: maximum water depth of $fn3 must be deeper than site depth of $fn2")
   end
+  nds = size(e)[2]
+  println(out0,"Number_of_sea-surface-platforms: $nds")
   # --- Fixed Earth radius
   Rg, Rl = localradius(lat)
 
@@ -75,8 +79,8 @@ function static_array_TR(lat, TR_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::Str
   yd1 = zeros(num); yd2 = zeros(num)
   zd1 = zeros(num); zd2 = zeros(num)
   for i in 1:num
-    xd1[i], yd1[i], zd1[i] = anttena2tr(x1[i],y1[i],z1[i],h1[i],p1[i],r1[i],e)
-    xd2[i], yd2[i], zd2[i] = anttena2tr(x2[i],y2[i],z2[i],h2[i],p2[i],r2[i],e)
+    xd1[i], yd1[i], zd1[i] = anttena2tr(x1[i],y1[i],z1[i],h1[i],p1[i],r1[i],e[:,ids[i]])
+    xd2[i], yd2[i], zd2[i] = anttena2tr(x2[i],y2[i],z2[i],h2[i],p2[i],r2[i],e[:,ids[i]])
   end
   # --- Set mean tr_height & TT corection
   println(stderr," --- TT corection")
@@ -85,7 +89,7 @@ function static_array_TR(lat, TR_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::Str
   println(stderr,"     tr_height:",tr_height)
   Tv0 = zeros(numk); Vd = zeros(numk); Vr = zeros(numk); cc = zeros(numk,NC)
   for k in 1:numk
-    Tv0[k], Vd[k], Vr[k], cc[k,1:NC], rms = ttcorrection(px[k],py[k],pz[k],tr_height,z,v,nz_st,numz,TR_DEPTH,lat)
+    Tv0[k], Vd[k], Vr[k], cc[k,1:NC], rms = ttcorrection(px[k],py[k],pz[k],tr_height,z,v,nz_st,numz,TR_DEPTH0,lat)
     println(stderr,"     RMS for PxP-$k: ",rms)
     println(out0,"     RMS for PxP-$k: ",rms)
   end
@@ -98,7 +102,7 @@ function static_array_TR(lat, TR_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::Str
   d = zeros(num); H = zeros(num,NP); a0 = zeros(NP); a = zeros(NP)
   dc = zeros(num); dr = zeros(num); delta = 1.e6; rms = 1.e6
   sigma2 = 0.0; aic = 0.0; bic = 0.0; Hinv = zeros(NP,NP)
-  a0[4] = e[1]; a0[5] = e[2]; a0[6] = e[3]
+  a0[4] = e[1,key]; a0[5] = e[2,key]; a0[6] = e[3,key]
 
 # --- Main Anlysis --- #
   println(stderr," === Inversion")
@@ -115,8 +119,13 @@ function static_array_TR(lat, TR_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::Str
       # --- Set TR pos
       e0 = zeros(3)
       e0[1] = a0[4]; e0[2] = a0[5]; e0[3] = a0[6]
-      xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
-      xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
+      if ids[n] == key
+        xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
+        xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
+      else
+        xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e[:,ids[n]])
+        xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e[:,ids[n]])
+      end
       # --- Calculate TT
       tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
@@ -135,20 +144,35 @@ function static_array_TR(lat, TR_DEPTH=3.0,NPB=100::Int64; fn1="tr-ant.inp"::Str
       tcz = tcz1 + tcz2
       # --- Difference for tr-ant
       e0[1] = a0[4] + de; e0[2] = a0[5]; e0[3] = a0[6]
-      xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
-      xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
+      if ids[n] == key
+        xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
+        xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
+      else
+        xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e[:,ids[n]])
+        xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e[:,ids[n]])
+      end
       tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tce1 = tc1 + tc2
       e0[1] = a0[4]; e0[2] = a0[5] + de; e0[3] = a0[6]
-      xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
-      xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
+      if ids[n] == key
+        xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
+        xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
+      else
+        xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e[:,ids[n]])
+        xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e[:,ids[n]])
+      end
       tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tce2 = tc1 + tc2
       e0[1] = a0[4]; e0[2] = a0[5]; e0[3] = a0[6] + de
-      xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
-      xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
+      if ids[n] == key
+        xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e0)
+        xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e0)
+      else
+        xd1[n], yd1[n], zd1[n] = anttena2tr(x1[n],y1[n],z1[n],h1[n],p1[n],r1[n],e[:,ids[n]])
+        xd2[n], yd2[n], zd2[n] = anttena2tr(x2[n],y2[n],z2[n],h2[n],p2[n],r2[n],e[:,ids[n]])
+      end
       tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[n],yd1[n],zd1[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[n],yd2[n],zd2[n],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
       tce3 = tc1 + tc2

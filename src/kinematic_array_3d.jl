@@ -3,11 +3,11 @@
 #using Statistics
 #using LinearAlgebra
 
-export kinematic_array
+export kinematic_array_3d
 """
-    kinematic_array(lat,TR_DEPTH; fn1,fn2,fn3,fn4,NR,eps,ITMAX,delta_pos,fno0,fno1,fno2)
+    kinematic_array_3d(lat,TR_DEPTH; fn1,fn2,fn3,fn4,NR,eps,ITMAX,delta_pos,fno0,fno1,fno2)
 
-Perform kinematic array positioning.
+Perform kinematic array positioning for 3d components.
 
 * `lat`: Site latitude
 * `TR_DEPTH`: Transducer depth from the sea-surface
@@ -24,30 +24,30 @@ Perform kinematic array positioning.
 * `fno2`: Output file name for the travel-time residuals (`fno2=residual_kinematic.out` by default)
 
 # Example
-    kinematic_array(42.0,4.0)
+    kinematic_array_3d(42.0,4.0)
 """
-function kinematic_array(lat,TR_DEPTH::Vector{Float64}; NR=3::Int64,eps=1.e-4,ITMAX=20::Int64,delta_pos=1.e-4,fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,fno1="kinematic_array.out"::String,fno2="residual_kinematic.out"::String,fno0="log.txt"::String)
-  println(stderr," === GNSS-A positioning: kinematic_array  ===")
+function kinematic_array_3d(lat,TR_DEPTH::Vector{Float64}; NR=4::Int64,eps=1.e-4,ITMAX=20::Int64,delta_pos=1.e-4,fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,fno1="kinematic_array.out"::String,fno2="residual_kinematic.out"::String,fno0="log.txt"::String)
+  println(stderr," === GNSS-A positioning: kinematic_array_3d  ===")
   # --- Input check
   nds0 = size(TR_DEPTH)[1]
-  if NR < 3
-    error(" kinematic_array: NR must be more than 3")
+  if NR < 4
+    error(" kinematic_array: NR must be more than 4")
   end
   # --- Log
   time1 = now()
   place = pwd()
   open(fno0,"w") do out0
   println(out0,time1)
-  println(out0,"kinematic_array.jl at $place")
-  println(out0,"Default_latitude: $lat")
+  println(out0,"kinematic_array_3d.jl at $place")
   for n in 1:nds0
     println(out0,"TR_DEPTH-$n: $TR_DEPTH[$n]")
   end
   TR_DEPTH0 = minimum(TR_DEPTH)
+  println(out0,"Default_latitude: $lat")
   # --- Set parameters
   println(stderr," --- Set parameters")
-  NP = 3       # Number of parameters for each 
-  dx = delta_pos; dy = delta_pos; NC = 18; maxp = 50000 # Fixed parameters
+  NP = 4       # Number of parameters for each 
+  dx = delta_pos; dy = delta_pos; dz = delta_pos; NC = 18; maxp = 50000 # Fixed parameters
   println(out0,"Number of usable responces for each shot: $NR")
   println(out0,"Delta_position: $delta_pos")
   println(out0,"Maximum_number_of_iterations: $ITMAX")
@@ -129,20 +129,24 @@ function kinematic_array(lat,TR_DEPTH::Vector{Float64}; NR=3::Int64,eps=1.e-4,IT
           k = nk[ii]
           ic[i] = k
           # --- Calculate TT
-          tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k],xd1[ii],yd1[ii],zd1[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
-          tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k],xd2[ii],yd2[ii],zd2[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+          tc1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd1[ii],yd1[ii],zd1[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+          tc2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+a0[3],xd2[ii],yd2[ii],zd2[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
           vert = (vert1 + vert2) / 2.0
           tc = tc1 + tc2
           d[i] = (tp[ii] - tc)*vert
           # --- Differential TT
-          tcx1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1]+dx,py[k]+a0[2],pz[k],xd1[ii],yd1[ii],zd1[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
-          tcx2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1]+dx,py[k]+a0[2],pz[k],xd2[ii],yd2[ii],zd2[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+          tcx1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1]+dx,py[k]+a0[2],pz[k]+a0[3],xd1[ii],yd1[ii],zd1[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+          tcx2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1]+dx,py[k]+a0[2],pz[k]+a0[3],xd2[ii],yd2[ii],zd2[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
           tcx = tcx1 + tcx2
-          tcy1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2]+dy,pz[k],xd1[ii],yd1[ii],zd1[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
-          tcy2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2]+dy,pz[k],xd2[ii],yd2[ii],zd2[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+          tcy1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2]+dy,pz[k]+a0[3],xd1[ii],yd1[ii],zd1[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+          tcy2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2]+dy,pz[k]+a0[3],xd2[ii],yd2[ii],zd2[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
           tcy = tcy1 + tcy2
+          tcz1, to1, vert1 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+dz+a0[3],xd1[ii],yd1[ii],zd1[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+          tcz2, to2, vert2 = xyz2tt_rapid(px[k]+a0[1],py[k]+a0[2],pz[k]+dz+a0[3],xd2[ii],yd2[ii],zd2[ii],Rg,Tv0[k],Vd[k],Vr[k],tr_height,cc[k,1:NC])
+          tcz = tcz1 + tcz2
           # --- Fill matrix
-          H[i,1] = (tcx-tc)/dx*vert; H[i,2] = (tcy-tc)/dy*vert; H[i,3] = 1.0
+          H[i,1] = (tcx-tc)/dx*vert; H[i,2] = (tcy-tc)/dy*vert 
+          H[i,3] = (tcz-tc)/dz*vert; H[i,4] = 1.0
         end
         # --- Inversion
         Hinv = inv(transpose(H)*H)
@@ -152,19 +156,19 @@ function kinematic_array(lat,TR_DEPTH::Vector{Float64}; NR=3::Int64,eps=1.e-4,IT
         rms = std(dr)
         sa = NN * rms^2
         sigma2 = sa / (NN-NP)
-        a0[1:2] += a[1:2]
-        a0[3] = a[3]
-        delta = std(a[1:2])
-        println(stderr," Temporal position: $(a0[1:2]), $delta, $rms")
-        println(out0,"    Iteration: $it $(a0[1]) $(a0[2]) $delta $rms")
+        a0[1:3] += a[1:3]
+        a0[4] = a[4]
+        delta = std(a[1:3])
+        println(stderr," Temporal position: $(a0[1:3]), $delta, $rms")
+        println(out0,"    Iteration: $it $(a0[1]) $(a0[2]) $(a0[3]) $(a0[4]) $delta $rms")
         it += 1
       end
       println(stderr," End of loops",it-1)
       println(stderr," Hinv:",diag(Hinv))
-      println(stderr," --- Final position: $(a0[1:3]), $delta, $rms")
+      println(stderr," --- Final position: $(a0[1:4]), $delta, $rms")
       
       cv = sqrt.(sigma2*abs.(diag(Hinv))) # Error
-      println(out,"$(t1[ip[1]]) $(id[n]) $(a0[1]) $(a0[2]) 0.0 $(a0[3]) $(cv[1]) $(cv[2]) 0.0 $(cv[3]) $n")
+      println(out,"$(t1[ip[1]]) $(id[n]) $(a0[1]) $(a0[2]) $(a0[3]) $(a0[4]) $(cv[1]) $(cv[2]) $(cv[3]) $(cv[4]) $n")
       for i in 1:NN
         println(out2,"$(t1[ip[1]]) $(ic[i]) $(dr[i]) $(it-1) $n $(id[n])")
       end
