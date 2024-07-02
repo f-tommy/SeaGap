@@ -1,7 +1,7 @@
 name = "SeaGap"
 uuid = "d5582fe7-ad79-4b28-9e30-e97b255d16f2"
 authors = ["Fumiaki Tomita <39943988+f-tommy@users.noreply.github.com> and contributors"]
-version = "0.1.0"
+version = "1.1.0"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
