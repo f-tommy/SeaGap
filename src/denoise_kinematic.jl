@@ -111,13 +111,13 @@ function denoise_kinematic(;xrange=(-1,1),yrange=(-1,1),method="median"::String,
     x1 = ax - sigma1*xr; x2 = ax + sigma1*xr
     y1 = ay - sigma1*yr; y2 = ay + sigma1*yr
     dat1 = dat[dat[:,3].>x1,:]
-    dlist = vcat(dlist,dat[dat[:,3].<=x1,9])
+    dlist = vcat(dlist,dat[dat[:,3].<=x1,11])
     dat2 = dat1[dat1[:,3].<x2,:]
-    dlist = vcat(dlist,dat1[dat1[:,3].>=x2,9])
+    dlist = vcat(dlist,dat1[dat1[:,3].>=x2,11])
     dat3 = dat2[dat2[:,4].<y2,:]
-    dlist = vcat(dlist,dat2[dat2[:,4].>=y2,9])
+    dlist = vcat(dlist,dat2[dat2[:,4].>=y2,11])
     dat = dat3[dat3[:,4].>y1,:]
-    dlist = vcat(dlist,dat3[dat3[:,4].<=y1,9])
+    dlist = vcat(dlist,dat3[dat3[:,4].<=y1,11])
   end
   x0 = dat[:,3]; y0 = dat[:,4]
   # Running filter
@@ -135,17 +135,17 @@ function denoise_kinematic(;xrange=(-1,1),yrange=(-1,1),method="median"::String,
     sx = sigma2*std(dx)
     sy = sigma2*std(dy)
     dat0 = hcat(dat,abs.(dx),abs.(dy))
-    dat1 = dat0[dat0[:,10].<sx,:]
-    dlist = vcat(dlist,dat0[dat0[:,10].>=sx,9])
-    dat = dat1[dat1[:,11].<sy,:]
-    dlist = vcat(dlist,dat1[dat1[:,11].>=sy,9])
+    dat1 = dat0[dat0[:,12].<sx,:]
+    dlist = vcat(dlist,dat0[dat0[:,12].>=sx,11])
+    dat = dat1[dat1[:,13].<sy,:]
+    dlist = vcat(dlist,dat1[dat1[:,13].>=sy,11])
   end
   # Make a new observational data file
   println(stderr,"Make denoised position data file: $fn")
   open("tmp","w") do out
     num = size(dat)[1]
     for i in 1:num
-      @printf(out,"%10.4f %i %4.6f %4.6f %.6e %s %s %s %i\n",dat[i,1],dat[i,2],dat[i,3],dat[i,4],dat[i,5],dat[i,6],dat[i,7],dat[i,8],dat[i,9])
+      @printf(out,"%10.4f %i %4.6f %4.6f %4.6f %f %s %s %s %s %i\n",dat[i,1],dat[i,2],dat[i,3],dat[i,4],dat[i,5],dat[i,6],dat[i,7],dat[i,8],dat[i,9],dat[i,10],dat[i,11])
     end
   end
   # Plot

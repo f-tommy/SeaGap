@@ -64,7 +64,7 @@ end
 """
     plot_time_kinematic_array(EW_range,NS_range, ntdrange; autoscale,fn,fno,plot_size,lmargin,tmargin,bmargin,rmargin,bmargin0,show,ms,gfs)
 
-Make a figure plotting the estimated array displacements obtained by `pos_array_each()` in time-series.
+Make a figure plotting the estimated array displacements obtained by `kinematic_array()` in time-series.
 
 * `EW_range`, `NS_range`, and `ntdrange`: Plot range of Y-sxis for EW [m], NS [m], and NTD [ms] components
 * `autoscale`: If `autoscale=true` (default), the plot range is automatically determined. If `autoscale=false`, the plot range of Y-axis is fixed by `EW_range`, `NS_range`, and `ntdrange`.
@@ -91,7 +91,7 @@ function plot_time_kinematic_array(EW_range=(-1.5,1.5),NS_range=(-1.5,1.5),ntdra
   k = a[:,2]
   x = a[:,3]
   y = a[:,4]
-  dt = a[:,5] * 1000
+  dt = a[:,6] * 1000
   if autoscale == true
     p0 = scatter(t,dt,ylabel="NTD [msec]",framestyle=:box,legend = :none,markershape=:cross,bottom_margin=Plots.Measures.Length(:mm,bmargin0),top_margin=Plots.Measures.Length(:mm, tmargin),markersize=ms,label="",xformatter=_->"")
     p1 = scatter(t,x,ylabel="Easting [m]",framestyle=:box,legend = :none,markershape=:cross,bottom_margin=Plots.Measures.Length(:mm,bmargin0),top_margin=Plots.Measures.Length(:mm, 0),markersize=ms,label="",xformatter=_->"")
@@ -108,5 +108,4 @@ function plot_time_kinematic_array(EW_range=(-1.5,1.5),NS_range=(-1.5,1.5),ntdra
     gui(plts)
   end
 end
-
 

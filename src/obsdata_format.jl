@@ -3,11 +3,12 @@
 
 export obsdata_format
 """
-    obsdata_format(numk; fno0,fno,fn1,fn21,fn22,maxp)
+    obsdata_format(numk, ids; fno0,fno,fn1,fn21,fn22,maxp)
 
 Make observational data file `fno` from GNSS antenna position time-series with attitude `fn1` and travel-time time-series file `fn21`-k.`fn22`.
 
-* `numk`: Number of seafloor tranponders at a site
+* `numk`: Total number of seafloor tranponders at a site
+* `ids`: Identifying number for sea surface platform
 * `fn0`: Log file name
 * `fno`: Output file name (`fno="obsdata.inp"` by default)
 * `fn1`: File name for GNSS antenna position time-series with attitude (`fn1=gps.jxyhhpr` by default)
@@ -17,7 +18,7 @@ Make observational data file `fno` from GNSS antenna position time-series with a
 # Example
     obsdata_format(4)
 """
-function obsdata_format(numk=4::Int64 ;fno0="log.txt"::String,fno="obsdata.inp"::String,fn1="gps.jxyhhpr"::String,fn21="pxp-"::String,fn22=".jttq"::String,maxp = 50000::Int64)
+function obsdata_format(numk=4::Int64, ids=1::Int64 ;fno0="log.txt"::String,fno="obsdata.inp"::String,fn1="gps.jxyhhpr"::String,fn21="pxp-"::String,fn22=".jttq"::String,maxp = 50000::Int64)
   println(stderr," === GNSS-A observational data formatting  ===")
   # --- Log
   time1 = now()
@@ -70,7 +71,7 @@ function obsdata_format(numk=4::Int64 ;fno0="log.txt"::String,fno="obsdata.inp":
   
   open(fno,"w") do out3
   for n in 1:num
-    @printf(out3,"%i %2.6f %10.6f %6.6f %6.6f %6.6f %5.5f %3.5f %3.5f %10.6f %6.6f %6.6f %6.6f %5.5f %3.5f %3.5f %d\n",a[n,1],a[n,2],a[n,3],a[n,4],a[n,5],a[n,6],a[n,7],a[n,8],a[n,9],a[n,10],a[n,11],a[n,12],a[n,13],a[n,14],a[n,15],a[n,16],a[n,17])
+    @printf(out3,"%i %2.6f %10.6f %6.6f %6.6f %6.6f %5.5f %3.5f %3.5f %10.6f %6.6f %6.6f %6.6f %5.5f %3.5f %3.5f %d %d\n",a[n,1],a[n,2],a[n,3],a[n,4],a[n,5],a[n,6],a[n,7],a[n,8],a[n,9],a[n,10],a[n,11],a[n,12],a[n,13],a[n,14],a[n,15],a[n,16],a[n,17],ids)
   end
   end
 

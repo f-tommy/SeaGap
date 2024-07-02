@@ -1,9 +1,9 @@
 #using Plots
 #using DelimitedFiles
 
-export plot_gradmap
+export plot_gradmap_grad
 """
-    plot_gradmap(xrange,yrange; autoscale,fn1,fn2,fno,plot_size,lmargin,tmargin,bmargin,rmargin,show,ms1,ms2,gfs,shape,cb)
+    plot_gradmap_grad(xrange,yrange; autoscale,fn1,fn2,fno,plot_size,lmargin,tmargin,bmargin,rmargin,show,ms1,ms2,gfs,shape,cb)
 
 Make a figure of sea-surface track with color of shallow gradient.
 
@@ -26,10 +26,10 @@ Make a figure of sea-surface track with color of shallow gradient.
 * `cb`: Color scale (`cb=:lightrainbow` by default)
 
 # Example
-    plot_gradmap((-2500,2500),(-2500,2500),autoscale=false,fno="gradmap.png")
+    plot_gradmap_grad((-2500,2500),(-2500,2500),autoscale=false,fno="gradmap.png")
 
 """
-function plot_gradmap(xrange=(-3000,3000),yrange=(-3000,3000);autoscale=true::Bool,fn1="pxp-ini.ini"::String,fn2="residual_grad.out"::String,fno="gradmap.pdf"::String,plot_size=(600,500),lmargin=2.5,tmargin=1.0,bmargin=1.0,rmargin=1.0,show=false::Bool,ms1=10::Int64,ms2=3::Int64,gfs=12::Int64,shape=:circle,cb=:lightrainbow)
+function plot_gradmap_grad(xrange=(-3000,3000),yrange=(-3000,3000);autoscale=true::Bool,fn1="pxp-ini.inp"::String,fn2="residual_grad.out"::String,fno="gradmap.pdf"::String,plot_size=(600,500),lmargin=2.5,tmargin=1.0,bmargin=1.0,rmargin=3.0,show=false::Bool,ms1=10::Int64,ms2=3::Int64,gfs=12::Int64,shape=:circle,cb=:lightrainbow)
   a = DelimitedFiles.readdlm(fn1)
   numk = size(a)[1]
   px = a[1:numk,1]
@@ -42,9 +42,9 @@ function plot_gradmap(xrange=(-3000,3000),yrange=(-3000,3000);autoscale=true::Bo
   dmin = -1*dmax
   p = scatter(px,py,markershape=:utriangle,markersize=ms1,c=RGB(0.8,0.8,0.8))
   if autoscale == true
-    scatter!(p,x,y,marker_z=d,markershape=shape,c=cb,clims=(dmin,dmax),xlabel="Easting [m]",ylabel="Northing [m]",aspect_ratio = 1,legend=false,colorbar=true, framestyle=:box,colorbar_title="TT residuals [msec]",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),markersize=ms2,guidefontsize=gfs)
+    scatter!(p,x,y,marker_z=d,markershape=shape,c=cb,clims=(dmin,dmax),xlabel="Easting [m]",ylabel="Northing [m]",aspect_ratio = 1,legend=false,colorbar=true, framestyle=:box,colorbar_title="\n P-TT residuals [msec]",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),markersize=ms2,guidefontsize=gfs)
   else
-    scatter!(p,x,y,marker_z=d,markershape=shape,c=cb,clims=(dmin,dmax),xlabel="Easting [m]",ylabel="Northing [m]",xlims=xrange,ylims=yrange,aspect_ratio = 1,legend=false,colorbar=true,colorbar_title="TT residuals [msec]",framestyle=:box,size=plot_size,left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),markersize=ms2,guidefontsize=gfs)
+    scatter!(p,x,y,marker_z=d,markershape=shape,c=cb,clims=(dmin,dmax),xlabel="Easting [m]",ylabel="Northing [m]",xlims=xrange,ylims=yrange,aspect_ratio = 1,legend=false,colorbar=true,colorbar_title="\n P-TT residuals [msec]",framestyle=:box,size=plot_size,left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),markersize=ms2,guidefontsize=gfs)
   end
   if show == false
     savefig(p,fno)

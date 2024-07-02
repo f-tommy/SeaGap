@@ -1,9 +1,9 @@
 #using Plots
 #using DelimitedFiles
 
-export plot_ntdgrad
+export plot_ntd_grad
 """
-    plot_ntdgrad(ntdrange,resrange; fno,fn,autoscale,plot_size,lmargin,rmargin,tmargin,bmargin,show,ms,bmargin0)
+    plot_ntd_grad(ntdrange,resrange; fno,fn,autoscale,plot_size,lmargin,rmargin,tmargin,bmargin,show,ms,bmargin0)
 
 Make a figure of the time-series of the projected travel-time residuals in the nadir direction, those without the deep gradients, and the travel-time residuals removing the modeled NTD.
 
@@ -21,21 +21,21 @@ Make a figure of the time-series of the projected travel-time residuals in the n
 * `ms`: Plotted marker size (`ms=4` by default)
 
 # Example
-    plot_ntdgrad()
+    plot_ntd_grad()
 """
-function plot_ntdgrad(ntdrange=(-3,3),resrange=(-1,1); fno="ntdgrad.pdf"::String,fn="residual_grad.out"::String,autoscale=true,plot_size=(650,850),lmargin=2.5, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=false,ms=4::Int64,bmargin0=-4,lwi=2)
+function plot_ntd_grad(ntdrange=(-3,3),resrange=(-1,1); fno="ntdgrad.pdf"::String,fn="residual_grad.out"::String,autoscale=true,plot_size=(650,850),lmargin=2.5, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=false,ms=4::Int64,bmargin0=-4)
   dat0 = DelimitedFiles.readdlm(fn)
   num = size(dat0)[1]
   dat = unixsort2(dat0,1,2)
   t0 = dat[1,1]
   numk = round(Int64,findmax(dat[1:num,2])[1])
   if autoscale == true
-    p0 = plot(ylabel="NTD [msec]",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin0),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),label="",xformatter=_->"")
-    p1 = plot(ylabel="NTD [msec]",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin0),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),label="",xformatter=_->"")
+    p0 = plot(ylabel="P-TT residual [msec]",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin0),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),label="",xformatter=_->"")
+    p1 = plot(ylabel="P-TT residual [msec]\n removing deep gradients",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin0),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),label="",xformatter=_->"")
     p2 = plot(xlabel="Time [hour]",ylabel="Residual [msec]",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin),top_margin=Plots.Measures.Length(:mm, 0),right_margin=Plots.Measures.Length(:mm, rmargin),legend=:none)
   else
-    p0 = plot(ylim=ntdrange,ylabel="NTD [msec]",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin0),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),label="",xformatter=_->"")
-    p1 = plot(ylim=ntdrange,ylabel="NTD [msec]",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin0),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),label="",xformatter=_->"")
+    p0 = plot(ylim=ntdrange,ylabel="P-TT residual [msec]",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin0),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),label="",xformatter=_->"")
+    p1 = plot(ylim=ntdrange,ylabel="P-TT residual [msec]\n removing deep gradients",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin0),top_margin=Plots.Measures.Length(:mm, tmargin),right_margin=Plots.Measures.Length(:mm, rmargin),label="",xformatter=_->"")
     p2 = plot(ylim=resrange,xlabel="Time [hour]",ylabel="Residual [msec]",left_margin=Plots.Measures.Length(:mm, lmargin),bottom_margin=Plots.Measures.Length(:mm, bmargin),top_margin=Plots.Measures.Length(:mm, 0),right_margin=Plots.Measures.Length(:mm, rmargin),legend=:none)
   end
   for k in 1:numk
@@ -53,8 +53,8 @@ function plot_ntdgrad(ntdrange=(-3,3),resrange=(-1,1); fno="ntdgrad.pdf"::String
         i0 += 1
       end
     end
-    scatter!(p0,t,d0,ylabel="NTD [msec]",markershape=:cross,label="Transponder $k",markersize=ms)
-    scatter!(p1,t,d,ylabel="NTD [msec]",markershape=:cross,label=:none,markersize=ms)
+    scatter!(p0,t,d0,ylabel=" P-TT residual [msec]",markershape=:cross,label="Transponder $k",markersize=ms)
+    scatter!(p1,t,d,ylabel="P-TT residual [msec]\n removing deep gradients",markershape=:cross,label=:none,markersize=ms)
     scatter!(p2,t,dr,xlabel="Time [hour]",ylabel="Residual [msec]",markershape=:cross,label="$k",markersize=ms)
   end
   t = (dat[:,1] .- t0) / (60*60)
@@ -63,9 +63,9 @@ function plot_ntdgrad(ntdrange=(-3,3),resrange=(-1,1); fno="ntdgrad.pdf"::String
   d2 = dat[:,12] * 1000
   dl = dat[:,10] * 1000
   scatter!(p0,t,d1,mc=:black,markershape=:circle,markerstrokewidth=0,markersize=1,label="S-NTD & deep gradient")
-  plot!(p1,t,d0,lc=:black,label="S-NTD",lw=lwi)
-  plot!(p1,t,dl,lc=:red,label="L-NTD",lw=lwi)
-  plot!(p1,t,d2,lc=:blue,label="L-NTD & shallow gradient",lw=lwi)
+  plot!(p1,t,d0,lc=:black,label="S-NTD",lw=2)
+  plot!(p1,t,dl,lc=:red,label="L-NTD",lw=2)
+  plot!(p1,t,d2,lc=:blue,label="L-NTD & shallow gradient",lw=2)
   plts = plot(p0,p1,p2,layout=(3,1), size=plot_size,framestyle=:box)
   if show == false
     savefig(plts,fno)

@@ -5,9 +5,9 @@
 #using Plots
 #plot_histogram2d()
 
-export plot_histogram2d
+export plot_histogram2d_grad
 """
-    plot_histogram2d(;fn,show,fno,plot_size,lmargin,tmargin,bmargin,rmargin,nshuffle,lfs,tfs,hm,vm,nbins,pscale)
+    plot_histogram2d_grad(;fn,show,fno,plot_size,lmargin,tmargin,bmargin,rmargin,nshuffle,lfs,tfs,hm,vm,nbins,pscale)
 
 Make a figure showing histograms, heatmaps, and scatter maps for major six parameters (array displacements, shallow gradients, gradient depth).
 
@@ -28,9 +28,9 @@ Make a figure showing histograms, heatmaps, and scatter maps for major six param
 * `vm`: Vertical interval of panels (`vm=-1.0` by default) 
 
 # Example
-    plot_histogram2d(fno="histogram2d.pdf")
+    plot_histogram2d_grad(fno="histogram2d.pdf")
 """
-function plot_histogram2d(;fn="sample.out"::String,show=false::Bool,fno="histogram2d.pdf"::String,plot_size=(700,700),lmargin=1.5,tmargin=1.0,bmargin=1.0,rmargin=1.5,nshuffle=10000::Int64,lfs=5::Int64,tfs=4::Int64,hm=-1.0,vm=-1.0,nbins=50::Int64,pscale=3)
+function plot_histogram2d_grad(;fn="sample.out"::String,show=false::Bool,fno="histogram2d.pdf"::String,plot_size=(700,700),lmargin=1.5,tmargin=1.0,bmargin=1.0,rmargin=1.5,nshuffle=10000::Int64,lfs=5::Int64,tfs=4::Int64,hm=-1.0,vm=-1.0,nbins=50::Int64,pscale=3)
   println(stderr," === Drawing 2d-histograms for static_array_mcmcgrad samples ===")
   time1 = now()
   # --- Read data

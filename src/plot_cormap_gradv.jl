@@ -2,13 +2,11 @@
 #using Statistics
 #using DelimitedFiles
 #using Plots
-# Usage: plot_cormap()
-# Usage: plot_cormap(type="all",NPB=41,as=5,fno="cormap_all.pdf")
 
-export plot_cormap
+export plot_cormap_gradv
 
 """
-    plot_cormap(;txt,all,fn,fno,fno0,as,pfs,plot_size,show,lmargin,tmargin,bmargin,rmargin)
+    plot_cormap_gradv(;txt,all,fn,fno,fno0,as,pfs,plot_size,show,lmargin,tmargin,bmargin,rmargin)
 
 Make a figure correlation coefficient map from the sampling results of `static_array_mcmcgrad()` or `static_array_mcmcgradc()`.
 
@@ -27,18 +25,18 @@ Make a figure correlation coefficient map from the sampling results of `static_a
 * `show`: if `show=true`, a figure is temporally shown; if false, the figure is save as `fno` (`show=false` by default)
 
 # Example
-    plot_cormap(type="all",NPB=41,as=5,fno="cormap_all.pdf")
+    plot_cormap_gradv(type="all",NPB=41,as=5,fno="cormap_all.pdf")
 
 """
-function plot_cormap(;txt=false::Bool,all=false::Bool,fn="sample.out"::String,fno="cormap.pdf"::String,fno0="correlation.out"::String,as=10::Int64,pfs=8::Int64,plot_size=(600,600),show=false::Bool,lmargin=0.5,tmargin=0.5,bmargin=0.5,rmargin=4.0)
+function plot_cormap_gradv(;txt=false::Bool,all=false::Bool,fn="sample.out"::String,fno="cormap.pdf"::String,fno0="correlation.out"::String,as=10::Int64,pfs=8::Int64,plot_size=(600,600),show=false::Bool,lmargin=0.5,tmargin=0.5,bmargin=0.5,rmargin=4.0)
   println(stderr," === Correlation for static_array_mcmcgrad samples ===")
   time1 = now()
   # --- Read data
   println(stderr," --- Read files")
   dat0, list0 = DelimitedFiles.readdlm(fn, header=true)
   if all == false
-    dat = dat0[1:end,1:6]
-    list = list0[1:6]
+    dat = dat0[1:end,1:7]
+    list = list0[1:7]
   else
     dat = copy(dat0)
     list = list0[1:end]

@@ -210,7 +210,7 @@ function denoise(lat,TR_DEPTH,resrange=(-3,3),resrange2=(-1,1); method="median":
   open("tmp","w") do out
   for i in 1:num
     if id[i] == 0
-      @printf(out,"%i %2.6f %10.6f %6.6f %6.6f %6.6f %5.5f %3.5f %3.5f %10.6f %6.6f %6.6f %6.6f %5.5f %3.5f %3.5f %d\n",odat[i,1],odat[i,2],odat[i,3],odat[i,4],odat[i,5],odat[i,6],odat[i,7],odat[i,8],odat[i,9],odat[i,10],odat[i,11],odat[i,12],odat[i,13],odat[i,14],odat[i,15],odat[i,16],odat[i,17])
+      @printf(out,"%i %2.6f %10.6f %6.6f %6.6f %6.6f %5.5f %3.5f %3.5f %10.6f %6.6f %6.6f %6.6f %5.5f %3.5f %3.5f %d %d\n",odat[i,1],odat[i,2],odat[i,3],odat[i,4],odat[i,5],odat[i,6],odat[i,7],odat[i,8],odat[i,9],odat[i,10],odat[i,11],odat[i,12],odat[i,13],odat[i,14],odat[i,15],odat[i,16],odat[i,17],odat[i,18])
     end
   end
   end

@@ -5,9 +5,9 @@
 #include("simple_inversion.jl")
 # Usage :make_initial()
 
-export make_initial
+export make_initial_grad
 """
-    make_initial(;fn1,fn2,fn3,fno,error_scale,tscale)
+    make_initial_grad(;fn1,fn2,fn3,fno,error_scale,tscale)
 
 Make an initial data file `fno` for `static_array_mcmcgrad()` or `static_array_mcmcgradc()` using initial transponder positions `fn1` and the estimation results (`fn2` and `fn3`).
 The step widths for mcmc are determined as standard deviations / `error_scale`.
@@ -19,9 +19,9 @@ The step widths for mcmc are determined as standard deviations / `error_scale`.
 * `tscale`: Temporal scaling for time in the polynomial functions (time [sec] is converted into [hour]/`tscale`, `tscale=10` by default, this should correspond to the whole observational period in hours)
 
 # Example
-    make_initial(error_scale=6.0)
+    make_initial_grad(error_scale=6.0)
 """
-function make_initial(;fn1="pxp-ini.inp"::String,fn2="residual.out"::String,fn3="solve.out"::String,fno="initial.inp"::String,error_scale = 5.0,tscale=10.0)
+function make_initial_grad(;fn1="pxp-ini.inp"::String,fn2="residual.out"::String,fn3="solve.out"::String,fno="initial.inp"::String,error_scale = 5.0,tscale=10.0)
   println(stderr," === Make initial for static_array_mcmcgrad  ===")
   # --- Start log
   time1 = now()

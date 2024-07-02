@@ -43,12 +43,10 @@ Perform MCMC-based static array positioning considering a sloping sound speed st
 # Example
     static_array_mcmcgrad(lat,TR_DEPTH,NPB,delta_scale=0.002)
 """
-function static_array_mcmcgrad(lat,TR_DEPTH=3.0,NPB=100::Int64; NSB=100::Int64,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,lscale=1.0,ndelay=1::Int64,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String,aventd=false,daave=2.e-6,daind=10.0,tscale=10.0)
+function static_array_mcmcgrad(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; NSB=100::Int64,nloop=1200000::Int64,nburn=200000::Int64,NA=5::Int64,lscale=1.0,ndelay=1::Int64,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_grad.out"::String,fno7="bspline.out"::String,aventd=false,daave=2.e-6,daind=10.0,tscale=10.0)
   println(stderr," === GNSS-A positioning: static_array_mcmcgrad  ===")
   # --- Input check
-  if TR_DEPTH < 0
-    error(" static_array_mcmcgrad: TR_DEPTH must be positive")
-  end
+  nds0 = size(TR_DEPTH)[1]
   if NPB < 1
     error(" static_array_mcmcgrad: NPB must be more than 1")
   end
@@ -68,22 +66,27 @@ function static_array_mcmcgrad(lat,TR_DEPTH=3.0,NPB=100::Int64; NSB=100::Int64,n
   NP0 = 13; NC = 18 # Number of fixed parameters
   println(out0,"Number_of_B-spline_knots: $NPB")
   println(out0,"Default_latitude: $lat")
-  println(out0,"TR_DEPTH: $TR_DEPTH")
   println(out0,"Number_of_MCMC_loop: $nloop")
   println(out0,"Burn_in_period: $nburn")
   println(out0,"Sampling_interval: $NA")
   println(out0,"Number_of_random_sampling_bases: $NSB")
   println(out0,"Step_widths_for_NTD: $daave $daind")
+  for n in 1:nds0
+    println(out0,"TR_DEPTH-$n: $TR_DEPTH[$n]")
+  end
+  TR_DEPTH0 = minimum(TR_DEPTH)
   # --- Read data
   println(stderr," --- Read files")
   e = read_ant(fn1)
   numk, px, py, pz = read_pxppos(fn2)
-  z, v, nz_st, numz = read_prof(fn3,TR_DEPTH)
-  num, nk, tp, t1, x1, y1, z1, h1, p1, r1, t2, x2, y2, z2, h2, p2, r2, nf = read_obsdata(fn4)
+  z, v, nz_st, numz = read_prof(fn3,TR_DEPTH0)
+  num, nk, tp, t1, x1, y1, z1, h1, p1, r1, t2, x2, y2, z2, h2, p2, r2, nf, ids = read_obsdata(fn4)
   NP, a0, a1, a2, da, list = read_initial(fn5)
   if z[end] < maximum(abs.(pz))
     error(" static_array_mcmcgrad: maximum water depth of $fn3 must be deeper than site depth of $fn2")
   end
+  nds = size(e)[2]
+  println(out0,"Number_of_sea-surface-platforms: $nds")
   a = copy(a0)
   # --- Average ntd
   if aventd == true
@@ -97,8 +100,8 @@ function static_array_mcmcgrad(lat,TR_DEPTH=3.0,NPB=100::Int64; NSB=100::Int64,n
   yd1 = zeros(num); yd2 = zeros(num)
   zd1 = zeros(num); zd2 = zeros(num)
   for i in 1:num
-    xd1[i], yd1[i], zd1[i] = anttena2tr(x1[i],y1[i],z1[i],h1[i],p1[i],r1[i],e)
-    xd2[i], yd2[i], zd2[i] = anttena2tr(x2[i],y2[i],z2[i],h2[i],p2[i],r2[i],e)
+    xd1[i], yd1[i], zd1[i] = anttena2tr(x1[i],y1[i],z1[i],h1[i],p1[i],r1[i],e[:,ids[i]])
+    xd2[i], yd2[i], zd2[i] = anttena2tr(x2[i],y2[i],z2[i],h2[i],p2[i],r2[i],e[:,ids[i]])
   end
   # --- Set mean tr_height & TT corection
   println(stderr," --- TT corection")
@@ -107,7 +110,7 @@ function static_array_mcmcgrad(lat,TR_DEPTH=3.0,NPB=100::Int64; NSB=100::Int64,n
   println(stderr,"     tr_height:",tr_height)
   Tv0 = zeros(numk); Vd = zeros(numk); Vr = zeros(numk); cc = zeros(numk,NC)
   for k in 1:numk
-    Tv0[k], Vd[k], Vr[k], cc[k,1:NC], rms = ttcorrection(px[k],py[k],pz[k],tr_height,z,v,nz_st,numz,TR_DEPTH,lat)
+    Tv0[k], Vd[k], Vr[k], cc[k,1:NC], rms = ttcorrection(px[k],py[k],pz[k],tr_height,z,v,nz_st,numz,TR_DEPTH0,lat)
     println(stderr,"     RMS for PxP-$k: ",rms)
     println(out0,"     RMS for PxP-$k: ",rms)
   end
@@ -162,8 +165,8 @@ function static_array_mcmcgrad(lat,TR_DEPTH=3.0,NPB=100::Int64; NSB=100::Int64,n
   hod02 = sum(hodp2)
   rms01 = sqrt(hod01/num)
   rms02 = sqrt(hod02/num)
-  hod01 = -num/2*log((10^a0[12])^2) - hod01/(2*(10^a0[12])^2)
-  hod02 = -num/2*log((10^a0[13])^2) - hod02/(2*(10^a0[13])^2)
+  hod01 = -num/2*log(2*pi*(10^a0[12])^2) - hod01/(2*(10^a0[12])^2)
+  hod02 = -num/2*log(2*pi*(10^a0[13])^2) - hod02/(2*(10^a0[13])^2)
   println(stderr,"   RMS; $rms01, PDF1: $hod01, PDF2: $hod02")
   println(out0,"   RMS; $rms01, PDF1: $hod01, PDF2: $hod02")
   println(out0,"   Pos; $(a0[1:3])")
@@ -244,8 +247,8 @@ function static_array_mcmcgrad(lat,TR_DEPTH=3.0,NPB=100::Int64; NSB=100::Int64,n
       hod2 = sum(hodp2)
       rms1 = sqrt(hod1/num)
       rms2 = sqrt(hod2/num)
-      hod1 = -num/2*log((10^a[12])^2) - hod1/(2*(10^a[12])^2)
-      hod2 = -num/2*log((10^a[13])^2) - hod2/(2*(10^a[13])^2)
+      hod1 = -num/2*log(2*pi*(10^a[12])^2) - hod1/(2*(10^a[12])^2)
+      hod2 = -num/2*log(2*pi*(10^a[13])^2) - hod2/(2*(10^a[13])^2)
       # --- Acceptance
       acp0 = log(rand())
       acp = hod1 + hod2 - hod01 - hod02

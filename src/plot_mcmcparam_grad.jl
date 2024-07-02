@@ -3,9 +3,9 @@
 #using DelimitedFiles
 #plot_mcmcparam()
 
-export plot_mcmcparam
+export plot_mcmcparam_grad
 """
-    plot_mcmcparam(NA; fno,fn,plot_size,lmargin,rmargin,tmargin,bmargin,show,nshuffle,ms,lfs,tfs,bmargin0)
+    plot_mcmcparam_grad(NA; fno,fn,plot_size,lmargin,rmargin,tmargin,bmargin,show,nshuffle,ms,lfs,tfs,bmargin0)
 
 Make a figure of the unknown parameters change through the MCMC iteration using the results of `pos_array_mcmcgrad()` and `static_array_mcmcgradc()`.
 
@@ -25,9 +25,9 @@ Make a figure of the unknown parameters change through the MCMC iteration using 
 * `tfs`: Tick fontsize (`tfs=5` by default)
 
 # Example
-    plot_mcmcparam(5,fno="mcmc_param.pdf")
+    plot_mcmcparam_grad(5,fno="mcmc_param.pdf")
 """
-function plot_mcmcparam(NA=5::Int64; fno="mcmc_param.pdf"::String,fn="sample.out"::String,plot_size=(500,800),lmargin=6,rmargin=1.0, tmargin=1.0, bmargin=1.0,show=false::Bool,nshuffle=10000::Int64,ms=2::Int64,lfs=5::Int64,tfs=5::Int64,bmargin0=-2)
+function plot_mcmcparam_grad(NA=5::Int64; fno="mcmc_param.pdf"::String,fn="sample.out"::String,plot_size=(500,800),lmargin=6,rmargin=1.0, tmargin=1.0, bmargin=1.0,show=false::Bool,nshuffle=10000::Int64,ms=2::Int64,lfs=5::Int64,tfs=5::Int64,bmargin0=-2)
   println(stderr," --- Read $fn")
   dat, list = DelimitedFiles.readdlm(fn,header=true)
   num = size(dat)[1]
