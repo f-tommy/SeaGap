@@ -7,7 +7,7 @@
 
 export make_initial_gradv
 """
-    make_initial_gradv(;fn1,fn2,fn3,fno,error_scale,gs,gd,sntd,lntd,scale,gdep0,sntdini,hp_err,hp_sntd,hp_gs,hp_gd,gsini)
+    make_initial_gradv(NPB1,NPB2;fn1,fn2,fn3,fno,error_scale,gs,gd,sntd,lntd,scale,gdep0,sntdini,hp_err,hp_sntd,hp_gs,hp_gd,gsini)
 
 Make an initial data file `fno` for `static_array_mcmc_all()` using initial transponder positions `fn1` and the estimation results (`fn2` and `fn3`).
 The step widths for mcmc are determined as standard deviations / `error_scale`.
@@ -25,12 +25,11 @@ The step widths for mcmc are determined as standard deviations / `error_scale`.
 * `hp_gs`: Initial value for hyper-parameter of shallow gradients
 * `hp_gd`: Initial value for hyper-parameter of gradient depth
 * `gsini`: if false, initial value of shallowe gradients are given as zero
-* `sntdini`: if false, initial value of S-NTD are given as zero
 
 # Example
     make_initial_gradv(5,100)
 """
-function make_initial_gradv(NPB1=5::Int64,NPB2=100::Int64; fn="solve.out"::String,fno="initial.inp"::String,error_scale = 5.0, gs = 2.e-6, gd = 0.01, sntd = 1.e-6, lntd = 1.e-6, scale = 0.005, gdep0 = 0.0, sntdini = true::Bool, hp_err = -4.0, hp_sntd = -4.5, hp_gs = -4.5, hp_gd = -1.0, gsini = false::Bool)
+function make_initial_gradv(NPB1=5::Int64,NPB2=100::Int64; fn="solve.out"::String,fno="initial.inp"::String,error_scale = 5.0, gs = 2.e-6, gd = 0.01, sntd = 1.e-6, lntd = 1.e-6, scale = 0.005, gdep0 = 0.0, sntdini = true::Bool, hp_err = -4.0, hp_sntd = -4.5, hp_gs = -4.5, hp_gd = -1.0, gsini = false::Bool,spc = false::Bool)
   println(stderr," === Make initial for static_array_mcmcgradv  ===")
   # --- Start log
   time1 = now()
@@ -67,16 +66,11 @@ function make_initial_gradv(NPB1=5::Int64,NPB2=100::Int64; fn="solve.out"::Strin
         println(out,"$(a0[ii]) $lntd L-NTD_$i") # 3d B-spline functions for rough NTD
       end
     end
-    if sntdini == true
-      a0[6+NPB1:end] .= 0.0 
-    end
-    for i in 6+NPB1:num0
-      ii = i - (5 + NPB1)
-      if sntd > 1.0
-        println(out,"$(a0[i]) $(e0[i]) S-NTD_$ii") # 3d B-spline functions for detailed NTD
-      else
-        println(out,"$(a0[i]) $sntd S-NTD_$ii") # 3d B-spline functions for detailed NTD
-      end
+    if sntd > 1.0
+      ee = mean(e0[6+NPB1:end])
+      println(out,"0.0 $ee S-NTD") # 3d B-spline functions for detailed NTD
+    else
+      println(out,"0.0 $sntd S-NTD") # 3d B-spline functions for detailed NTD
     end
   end
     

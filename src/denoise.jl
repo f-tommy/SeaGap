@@ -150,7 +150,7 @@ Calculate travel-time residual, estimate smoothed travel-time residuals by `n` r
 # Example
     denoise(lat,TR_DEPTH,k=0,n=7,sigma=4.0,method="median")
 """
-function denoise(lat,TR_DEPTH,resrange=(-3,3),resrange2=(-1,1); method="median"::String,autoscale=true::Bool,k=0,n=15,sigma=4.0,save=true::Bool,prompt=true::Bool,fn1="tr-ant.inp"::String, fn2="pxp-ini.inp"::String, fn3="ss_prof.inp"::String, fn4="obsdata.inp"::String, fn0="obsdata.inp_org"::String, plot_size=(1200,1200),lmargin=6.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=true::Bool, fno1="denoise.out"::String, fno2="denoise.png"::String,ms=6::Int64)
+function denoise(lat,TR_DEPTH::Vector{Float64},resrange=(-3,3),resrange2=(-1,1); method="median"::String,autoscale=true::Bool,k=0,n=15,sigma=4.0,save=true::Bool,prompt=true::Bool,fn1="tr-ant.inp"::String, fn2="pxp-ini.inp"::String, fn3="ss_prof.inp"::String, fn4="obsdata.inp"::String, fn0="obsdata.inp_org"::String, plot_size=(1200,1200),lmargin=6.0, rmargin=1.0, tmargin=1.0, bmargin=1.0, show=true::Bool, fno1="denoise.out"::String, fno2="denoise.png"::String,ms=6::Int64)
   # Calcualte travel-time residuals
   nv,kv,t1,t2,tp,tc,tr,vert = ttres(lat,TR_DEPTH, fn1=fn1, fn2=fn2, fn3=fn3, fn4=fn4)
   dat = hcat(nv,kv,t1,t2,tp,tc,tr,vert)

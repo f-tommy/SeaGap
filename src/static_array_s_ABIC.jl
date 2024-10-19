@@ -27,7 +27,7 @@ Range for the hyper-parameter constraining the norm of S-NTD (alpha) to be inves
 # Example
     static_array_s_ABIC(-2.0,2.0,0.5,36.2,[0.8],5,100)
 """
-function static_array_s_ABIC(r1,r2,r3,lat,TR_DEPTH::Vector{Float64},NPB1=5,NPB2=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, fno0="log.txt"::String,fno="ABIC_search.out"::String,delete=false::Bool)
+function static_array_s_ABIC(r1,r2,r3,lat,TR_DEPTH::Vector{Float64},NPB1=5,NPB2=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, fno0="log.txt"::String,fno="ABIC_search.out"::String,delete=false::Bool,spc=false)
   println(stderr," === GNSS-A positioning: static_array_s_ABIC  ===")
   # --- Input check
   nds0 = size(TR_DEPTH)[1]
@@ -109,8 +109,24 @@ function static_array_s_ABIC(r1,r2,r3,lat,TR_DEPTH::Vector{Float64},NPB1=5,NPB2=
   NPBV1, id1 = retrieveb(NPB1,tb1,ds1,t1,t2,num) 
   smin2, smax2, ds2, tb2 = mktbasis(NPB2,t1,t2,num)
   NPBV2, id2 = retrieveb(NPB2,tb2,ds2,t1,t2,num) 
+  NPA = 1
+  if spc == false
+    NPBV2 = zeros(Int64,1)
+    id2 = zeros(Int64,NPB2,1)
+    NPBV2[1], id2[:,1] = retrieveb(NPB2,tb2,ds2,t1,t2,num) 
+  else
+    NPBV2 = zeros(Int64,ntr)
+    id2 = zeros(Int64,NPB2,ntr)
+    NPA = ntr
+    for k in 1:ntr
+      t1e = t1[ids .== k]
+      t2e = t2[ids .== k]
+      nume = size(t1e)[1]
+      NPBV2[k], id2[:,k] = retrieveb(NPB2,tb2,ds2,t1e,t2e,nume) 
+    end
+  end 
   # --- Initialize
-  NP = NP0 + NPBV1 + NPBV2
+  NP = NP0 + NPBV1 + sum(NPBV2)
   d = zeros(num); H = zeros(num,NP); a0 = zeros(NP); a = zeros(NP)
   dc = zeros(num); dr = zeros(num); delta = 1.e6; rms = 1.e6
   G0 = zeros(NP,NP)
@@ -123,7 +139,7 @@ function static_array_s_ABIC(r1,r2,r3,lat,TR_DEPTH::Vector{Float64},NPB1=5,NPB2=
   for alpha in range
     open(fno,"a") do outa
     # --- Initialize
-    NP = NP0 + NPBV1 + NPBV2
+    NP = NP0 + NPBV1 + sum(NPBV2)
     d = zeros(num); H = zeros(num,NP); a0 = zeros(NP); a = zeros(NP)
     dc = zeros(num); dr = zeros(num); delta = 1.e6; rms = 1.e6
     G0 = zeros(NP,NP)
@@ -172,11 +188,20 @@ function static_array_s_ABIC(r1,r2,r3,lat,TR_DEPTH::Vector{Float64},NPB1=5,NPB2=
               H[n,NP0+id1[m]] = tbspline3((t1[n]+t2[n])/2.0,ds1,tb1,b0,NPB1)
             end
           end
+          if spc == false
+            ll = 1
+          else
+            ll = ids[n]
+          end
           for m in 1:NPB2
-            if id2[m] >= 1
+            if id2[m,ll] >= 1
               b0 = zeros(NPB2)
               b0[m] = 1.0
-              H[n,NP0+NPBV1+id2[m]] = tbspline3((t1[n]+t2[n])/2.0,ds2,tb2,b0,NPB2)
+              if ll == 1
+                H[n,NP0+NPBV1+id2[m,ll]] = tbspline3((t1[n]+t2[n])/2.0,ds2,tb2,b0,NPB2)
+              else
+                H[n,NP0+NPBV1+sum(NPBV2[1:ll-1])+id2[m,ll]] = tbspline3((t1[n]+t2[n])/2.0,ds2,tb2,b0,NPB2)
+              end
             end
           end
         end
@@ -194,7 +219,7 @@ function static_array_s_ABIC(r1,r2,r3,lat,TR_DEPTH::Vector{Float64},NPB1=5,NPB2=
       rms = std(dr)
       sa = LinearAlgebra.dot(dr,dr)
       sigma2 = sa / (num-NP)
-      abic = num*log(sa) - NPBV2*log(10.0^alpha) + logdet(Horg)
+      abic = num*log(sa) - sum(NPBV2)*log(10.0^alpha) + logdet(Horg)
       delta = std(a[1:3])
       a0[1:3] += a[1:3]
       a0[4:NP] = a[4:NP]

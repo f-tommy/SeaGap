@@ -64,7 +64,7 @@ Prior distributions for shallow gradients and gradient depth are applied.
 # Example
     static_array_mcmc_gradv(38.0,2.7,3.0,5,100,5,1,dmode=1,gmode=1,ds=0.4,NSB=50)
 """
-function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,NPB2=100::Int64,NPB3=5::Int64,NPB4=1::Int64; gm=0.0,gs=5.0e-5,dm=0.65,ds=0.15,rm=0.0,rs=0.1,gmode=1::Int64,dmode=3::Int64,rmode=1::Int64,NSB=100::Int64,nloop=600000::Int64,nburn=100000::Int64,NA=5::Int64,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_sdls.out"::String,fno7="bspline_gradv.out"::String,fno8="gradient.out"::String,fno9="initial.out"::String,gscale=10.0,kernel1=1::Int64,kernel2=1::Int64,random=true::Bool,zest=true::Bool,hgmode=2::Int64,hemode=0::Int64,hsmode=0::Int64,hdmode=2::Int64,he=-3.5,hs=-3.5,hg=-3.5,hd=0.5)
+function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,NPB2=100::Int64,NPB3=5::Int64,NPB4=1::Int64; gm=0.0,gs=5.0e-5,dm=0.65,ds=0.15,rm=0.0,rs=0.1,gmode=1::Int64,dmode=3::Int64,rmode=1::Int64,NSB=100::Int64,nloop=600000::Int64,nburn=100000::Int64,NA=5::Int64,fno0="log.txt"::String,fno1="sample.out"::String,fno2="mcmc.out"::String,fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,fn5="initial.inp"::String,fno3="position.out"::String,fno4="statistics.out"::String,fno5="acceptance.out"::String,fno6="residual_sdls.out"::String,fno7="bspline_gradv.out"::String,fno8="gradient.out"::String,fno9="initial.out"::String,gscale=10.0,kernel1=1::Int64,kernel2=1::Int64,zest=true::Bool,hgmode=2::Int64,hemode=0::Int64,hsmode=0::Int64,hdmode=2::Int64,he=-3.5,hs=-3.5,hg=-3.5,hd=0.5,spc=false)
   println(stderr," === GNSS-A positioning: static_array_mcmcgradv  ===")
   # --- Input check
   nds0 = size(TR_DEPTH)[1]
@@ -86,6 +86,7 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
   if NSB > NPB2
     NSB = NPB2
   end
+  ntr = size(TR_DEPTH)[1] # Add
   # --- Start log
   time1 = now()
   place = pwd()
@@ -171,7 +172,20 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
   smin1, smax1, ds1, tb1 = mktbasis(NPB1,t1,t2,num)
   NPBV1, id1 = retrieveb(NPB1,tb1,ds1,t1,t2,num) 
   smin2, smax2, ds2, tb2 = mktbasis(NPB2,t1,t2,num)
-  NPBV2, id2 = retrieveb(NPB2,tb2,ds2,t1,t2,num) 
+  if spc == false
+    NPBV2 = zeros(Int64,1)
+    id2 = zeros(Int64,NPB2,1)
+    NPBV2[1], id2[:,1] = retrieveb(NPB2,tb2,ds2,t1,t2,num) 
+  else
+    NPBV2 = zeros(Int64,ntr)
+    id2 = zeros(Int64,NPB2,ntr)
+    for k in 1:ntr
+      t1e = t1[ids .== k]
+      t2e = t2[ids .== k]
+      nume = size(t1e)[1]
+      NPBV2[k], id2[:,k] = retrieveb(NPB2,tb2,ds2,t1e,t2e,nume) 
+    end
+  end
   if NPB3 >= 4
     smin3, smax3, ds3, tb3 = mktbasis(NPB3,t1,t2,num)
     NPBV3, id3 = retrieveb(NPB3,tb3,ds3,t1,t2,num) 
@@ -186,19 +200,24 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
   end
   # --- Initialize
   println(stderr," --- Initialize")
-  NP = NP0 + NPBV1 + NPBV2 + 2*NPBV3 + 2*NPBV4
-  NP1 = NP0 + NPBV1 + NPBV2
+  NP = NP0 + NPBV1 + sum(NPBV2) + 2*NPBV3 + 2*NPBV4
+  NP1 = NP0 + NPBV1 + sum(NPBV2)
   d = zeros(num); dc = zeros(num); dr = zeros(num)
-  a0_tmp = a00[1:NP0+NPBV1]; da = da0[1:NP1]
+  a0_tmp = a00[1:NP0+NPBV1]; da = da0[1:NP0+NPBV1]
   if zest == false
     da[3] = 0.0
   end
-  if random == true
-    a_tmp = (10.0^(a00[9])).*randn(NPBV2)
-  else
-    a_tmp = a00[NP0+NPBV1+1:NP1]
+  listv = String[]
+  a_tmp = (10.0^(a00[9])).*randn(sum(NPBV2))
+  da_tmp = zeros(sum(NPBV2)) 
+  da_tmp[:] .= da0[end]
+  for k in 1:ntr
+    for i in 1:NPBV2[k]
+      push!(listv,"S-NTD_$k-$i")
+    end
   end
   a0 = vcat(a0_tmp,a_tmp)
+  da=vcat(da,da_tmp)
   if NPB3 >= 4
     list1 = String[]; list2 = String[]
     for i in 1:NPBV3
@@ -208,11 +227,9 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
       for i in 1:NPBV3
         da_tmp = da0[j+3]/gscale
         a_tmp = 0.0
-        if random == true
-          a_tmp = 10^(a0[10])*randn(1)[1]
-          if Distributions.pdf(gdist,a_tmp+a0[j+3]) <= 0
-            a_tmp = 0.0
-          end
+        a_tmp = 10^(a0[10])*randn(1)[1]
+        if Distributions.pdf(gdist,a_tmp+a0[j+3]) <= 0
+          a_tmp = 0.0
         end
         push!(a0,a_tmp); push!(da,da_tmp)
       end
@@ -227,11 +244,9 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
       for i in 1:NPBV4
         da_tmp = da0[j+5]/gscale
         a_tmp = 0.0
-        if random == true
-          a_tmp = 10^(a0[11])*randn(1)[1]
-          if Distributions.pdf(gdist,a_tmp+a0[j+5]) <= 0
-            a_tmp = 0.0
-          end
+        a_tmp = 10^(a0[11])*randn(1)[1]
+        if Distributions.pdf(gdist,a_tmp+a0[j+5]) <= 0
+          a_tmp = 0.0
         end
         push!(a0,a_tmp); push!(da,da_tmp)
       end
@@ -239,15 +254,15 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
   end
   if NPB3 >= 4 
     if NPB4 >= 4 
-      list = vcat(list0[1:NP1],list1,list2,list3,list4)
+      list = vcat(list0[1:NP0+NPBV1],listv,list1,list2,list3,list4)
     else
-      list = vcat(list0[1:NP1],list1,list2)
+      list = vcat(list0[1:NP0+NPBV1],listv,list1,list2)
     end 
   else
     if NPB4 >= 4 
-      list = vcat(list0[1:NP1],list3,list4)
+      list = vcat(list0[1:NP0+NPBV1],listv,list3,list4)
     else
-      list = list0[1:NP1]
+      list = vcat(list0[1:NP0+NPBV1],listv)
     end 
   end 
   open(fno9,"w") do out9
@@ -281,8 +296,24 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
   # B-spline reproduction
   a1 = a0[NP0+1:NP0+NPBV1]
   b1, sumb1 = fill_bspline_coef(NPB1,id1,a1,0.0)
-  a2 = a0[NP0+NPBV1+1:NP0+NPBV1+NPBV2]
-  b2, sumb2 = fill_bspline_coef(NPB2,id2,a2,0.0)
+  if spc == true
+    a2 = zeros(NPB2,ntr)
+    b2 = zeros(NPB2,ntr)
+    sumb2 = zeros(ntr)
+    a2[1:NPBV2[1],1] = a0[NP0+NPBV1+1:NP0+NPBV1+NPBV2[1]]
+    for k in 2:ntr
+      a2[1:NPBV2[k],k] = a0[NP0+NPBV1+sum(NPBV2[1:k-1])+1:NP0+NPBV1+sum(NPBV2[1:k])]
+    end
+    for k in 1:ntr
+      b2[:,k], sumb2[k] = fill_bspline_coef(NPB2,id2[:,k],a2[1:NPBV2[k],k],0.0)
+    end
+  else
+    a2 = zeros(findmax(NPBV2)[1],1)
+    b2 = zeros(NPB2,1)
+    sumb2 = zeros(1)
+    a2[:,1] = a0[NP0+NPBV1+1:NP0+NPBV1+NPBV2[1]]
+    b2[:,1], sumb2[1] = fill_bspline_coef(NPB2,id2[:,1],a2[:,1],0.0)
+  end
   b3 = zeros(NPB3,2)
   b4 = zeros(NPB4,2)
   if NPB3 >= 4
@@ -309,7 +340,11 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
   @threads for n in 1:num
     tt[n] = (t1[n] + t2[n]) / 2.0
     td1[n] = tbspline3(tt[n],ds1,tb1,b1,NPB1)
-    td2[n] = tbspline3(tt[n],ds2,tb2,b2,NPB2)
+    if spc == true
+      td2[n] = tbspline3(tt[n],ds2,tb2,b2[:,ids[n]],NPB2)
+    else
+      td2[n] = tbspline3(tt[n],ds2,tb2,b2[:,1],NPB2)
+    end
     if NPB3 >= 4
       td3[n] = tbspline3(tt[n],ds3,tb3,b3[:,1],NPB3)
       td4[n] = tbspline3(tt[n],ds3,tb3,b3[:,2],NPB3)
@@ -338,7 +373,13 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
   hod0 = sum(hodp)
   rms0 = sqrt(hod0/num)
   hod0 = -num/2*log((10^a0[8])^2) - hod0/(2*(10^a0[8])^2)
-  hod0 += -NPBV2/2*log((10^a0[9])^2) - sumb2/(2*(10^a0[9])^2)
+  if spc == true
+    for k in 1:ntr
+      hod0 += -NPBV2[k]/2*log((10^a0[9])^2) - sumb2[k]/(2*(10^a0[9])^2)
+    end
+  else
+    hod0 += -NPBV2[1]/2*log((10^a0[9])^2) - sumb2[1]/(2*(10^a0[9])^2)
+  end
   if NPB3 >= 4
     af1 = a0[NP1+1:NP1+NPBV3]; af2 = a0[NP1+NPBV3+1:NP1+NPBV3*2]
     hod0 += -NPBV3*log(10^a0[10]) -0.5*dot(af1,LL3*af1)/((10^a0[10])^2)
@@ -393,15 +434,31 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
       for i in NP0+1:NP0+NPBV1
         a[i] = perturbation_param_nolimit(a0[i],da[i])
       end
-      nss = Vector(NP0+NPBV1+1:NP0+NPBV1+NPBV2)
+      nss = Vector(NP0+NPBV1+1:NP1)
       @threads for i in shuffle(nss)[1:NSB]
         a[i] = perturbation_param_nolimit(a0[i],da[i])
       end
       # --- Calculate PDF
       a1 = a[NP0+1:NP0+NPBV1]
       b1, sumb1 = fill_bspline_coef(NPB1,id1,a1,0.0)
-      a2 = a[NP0+NPBV1+1:NP0+NPBV1+NPBV2]
-      b2, sumb2 = fill_bspline_coef(NPB2,id2,a2,0.0)
+      if spc == true
+        a2 = zeros(findmax(NPBV2)[1],ntr)
+        b2 = zeros(NPB2,ntr)
+        sumb2 = zeros(ntr)
+        a2[1:NPBV2[1],1] = a[NP0+NPBV1+1:NP0+NPBV1+NPBV2[1]]
+        for k in 2:ntr
+          a2[1:NPBV2[k],k] = a[NP0+NPBV1+sum(NPBV2[1:k-1])+1:NP0+NPBV1+sum(NPBV2[1:k])]
+        end
+        for k in 1:ntr
+          b2[:,k], sumb2[k] = fill_bspline_coef(NPB2,id2[:,k],a2[1:NPBV2[k],k],0.0)
+        end
+      else
+        a2 = zeros(findmax(NPBV2)[1],1)
+        b2 = zeros(NPB2,1)
+        sumb2 = zeros(1)
+        a2[:,1] = a[NP0+NPBV1+1:NP0+NPBV1+NPBV2[1]]
+        b2[:,1], sumb2[1] = fill_bspline_coef(NPB2,id2[:,1],a2[:,1],0.0)
+      end
       b3 = zeros(NPB3,2)
       b4 = zeros(NPB4,2)
       if NPB3 >= 4
@@ -420,7 +477,11 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
       @threads for i in 1:num
         tt[i] = (t1[i] + t2[i]) / 2.0
         td1[i] = tbspline3(tt[i],ds1,tb1,b1,NPB1)
-        td2[i] = tbspline3(tt[i],ds2,tb2,b2,NPB2)
+        if spc == true
+          td2[i] = tbspline3(tt[i],ds2,tb2,b2[:,ids[i]],NPB2)
+        else
+          td2[i] = tbspline3(tt[i],ds2,tb2,b2[:,1],NPB2)
+        end
         if NPB3 >= 4
           td3[i] = tbspline3(tt[i],ds3,tb3,b3[:,1],NPB3)
           td4[i] = tbspline3(tt[i],ds3,tb3,b3[:,2],NPB3)
@@ -449,7 +510,13 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
       hod = sum(hodp)
       rms = sqrt(hod/num)
       hod = -num*log(10^a[8]) - hod/(2*(10^a[8])^2)
-      hod += -NPBV2*log(10^a[9]) - sumb2/(2*(10^a[9])^2)
+      if spc == true  
+        for k in 1:ntr
+          hod += -NPBV2[k]*log(10^a[9]) - sumb2[k]/(2*(10^a[9])^2)
+        end
+      else
+        hod += -NPBV2[1]*log(10^a[9]) - sumb2[1]/(2*(10^a[9])^2)
+      end
       if NPB3 >= 4
         af1 = a[NP1+1:NP1+NPBV3]; af2 = a[NP1+NPBV3+1:NP1+NPBV3*2]
         hod += -NPBV3*log(10^a[10]) -0.5*dot(af1,LL3*af1)/((10^a[10])^2)
@@ -513,8 +580,24 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
   numa = length(a)
   a1 = a[NP0+1:NP0+NPBV1]
   b1, sumb1 = fill_bspline_coef(NPB1,id1,a1,0.0)
-  a2 = a[NP0+NPBV1+1:NP0+NPBV1+NPBV2]
-  b2, sumb2 = fill_bspline_coef(NPB2,id2,a2,0.0)
+  if spc == true
+    a2 = zeros(findmax(NPBV2)[1],ntr)
+    b2 = zeros(NPB2,ntr)
+    sumb2 = zeros(ntr)
+    a2[1:NPBV2[1],1] = a[NP0+NPBV1+1:NP0+NPBV1+NPBV2[1]]
+    for k in 2:ntr
+      a2[1:NPBV2[k],k] = a[NP0+NPBV1+sum(NPBV2[1:k-1])+1:NP0+NPBV1+sum(NPBV2[1:k])]
+    end
+    for k in 1:ntr
+      b2[:,k], sumb2[k] = fill_bspline_coef(NPB2,id2[:,k],a2[1:NPBV2[k],k],0.0)
+    end
+  else
+    a2 = zeros(findmax(NPBV2)[1],1)
+    b2 = zeros(NPB2,1)
+    sumb2 = zeros(1)
+    a2[:,1] = a[NP0+NPBV1+1:NP0+NPBV1+NPBV2[1]]
+    b2[:,1], sumb2[1] = fill_bspline_coef(NPB2,id2[:,1],a2[:,1],0.0)
+  end
   b3 = zeros(NPB3,2)
   b4 = zeros(NPB4,2)
   if NPB3 >= 4
@@ -534,7 +617,11 @@ function static_array_mcmcgradv(lat,dep,TR_DEPTH::Vector{Float64},NPB1=5::Int64,
     k = nk[n]  # PXP number
     tt[n] = (t1[n] + t2[n]) / 2.0
     td1[n] = tbspline3(tt[n],ds1,tb1,b1,NPB1)
-    td2[n] = tbspline3(tt[n],ds2,tb2,b2,NPB2)
+    if spc == true
+      td2[n] = tbspline3(tt[n],ds2,tb2,b2[:,ids[n]],NPB2)
+    else
+      td2[n] = tbspline3(tt[n],ds2,tb2,b2[:,1],NPB2)
+    end
     if NPB3 >= 4
       td3[n] = tbspline3(tt[n],ds3,tb3,b3[:,1],NPB3)
       td4[n] = tbspline3(tt[n],ds3,tb3,b3[:,2],NPB3)

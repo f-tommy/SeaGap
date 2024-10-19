@@ -101,11 +101,11 @@ function plot_timetrack(xrange=(-3000,3000),yrange=(-3000,3000),zrange=(0,10) ;a
   if autoscale == false
     p1 = plot(xlims=(ts,te),ylims=xrange,ylabel="Easting [m]",framestyle=:box,xformatter=_->"",top_margin=Plots.Measures.Length(:mm,tmargin),bottom_margin=Plots.Measures.Length(:mm,bmargin0))
     p2 = plot(xlims=(ts,te),ylims=yrange,ylabel="Northing [m]",framestyle=:box,xformatter=_->"",top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin0))
-    p3 = plot(xlims=(ts,te),ylims=zrange,ylabel="Uplifting [m]",framestyle=:box,top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin))
+    p3 = plot(xlims=(ts,te),ylims=zrange,ylabel="Height [m]",framestyle=:box,top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin))
   else
     p1 = plot(xlims=(ts,te),ylabel="Easting [m]",framestyle=:box,xformatter=_->"",top_margin=Plots.Measures.Length(:mm,tmargin),bottom_margin=Plots.Measures.Length(:mm,bmargin0))
     p2 = plot(xlims=(ts,te),ylabel="Northing [m]",framestyle=:box,xformatter=_->"",top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin0))
-    p3 = plot(xlims=(ts,te),ylabel="Uplifting [m]",framestyle=:box,top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin))
+    p3 = plot(xlims=(ts,te),ylabel="Height [m]",framestyle=:box,top_margin=Plots.Measures.Length(:mm,0),bottom_margin=Plots.Measures.Length(:mm,bmargin))
   end
   for i in 1:Int(maximum(a[:,18]))
     t = (a[a[:,18].==i,3] .- ts0)/60/60

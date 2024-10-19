@@ -56,7 +56,7 @@ function plot_ntd(ntdrange=(-3,3),resrange=(-1,1); fno="ntd.pdf"::String,fn="res
   end
   t = (dat[1:num,1] .- t0) / (60*60)
   dc = dat[1:num,4] * 1000
-  plot!(p0,t,dc,lc=:black,label="NTD")
+  scatter!(p0,t,dc,markerstrokecolor=:black,mc=:black,markershape=:circle,markerstrokewidth=0,markersize=1,label="NTD")
   plts = plot(p0,p1,layout=(2,1), size=plot_size,framestyle=:box)
   if show == false
     savefig(plts,fno)

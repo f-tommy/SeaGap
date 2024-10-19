@@ -27,7 +27,7 @@ Perform static positioning for determination of individual transponder positions
 # Example
     static_individual(38.3,3.0,81)
 """
-function static_individual(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos = 1.e-4,fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual.out"::String,fno4="bspline.out"::String)
+function static_individual(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos = 1.e-4,fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual.out"::String,fno4="bspline.out"::String,spc=false)
   println(stderr," === GNSS-A positioning: static_individual  ===")
   # --- Input check
   nds0 = size(TR_DEPTH)[1]
@@ -43,12 +43,14 @@ function static_individual(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr
   # --- Set parameters
   println(stderr," --- Set parameters")
   NC = 18
+  ntr = size(TR_DEPTH)[1]
   dx = delta_pos; dy = delta_pos; dz = delta_pos
   println(out0,"Convergence_eps: $eps")
   println(out0,"Number_of_B-spline_knots: $NPB")
   println(out0,"Default_latitude: $lat")
   println(out0,"Maximum_iterations: $ITMAX")
   println(out0,"Delat_position: $delta_pos")
+  println(out0,"Platform_correction: $spc")
   for n in 1:nds0
     println(out0,"TR_DEPTH-$n: $TR_DEPTH[$n]")
   end
@@ -91,9 +93,24 @@ function static_individual(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr
   # --- Set B-spline function
   println(stderr," --- NTD basis")
   smin, smax, ds, tb = mktbasis(NPB,t1,t2,num)
-  NPBV, id = retrieveb(NPB,tb,ds,t1,t2,num) 
+  NPA = 1
+  if spc == false
+    NPBV = zeros(Int64,1)
+    id = zeros(Int64,NPB,1)
+    NPBV[1], id[:,1] = retrieveb(NPB,tb,ds,t1,t2,num) 
+  else
+    NPBV = zeros(Int64,ntr)
+    id = zeros(Int64,NPB,ntr)
+    NPA = ntr
+    for k in 1:ntr
+      t1e = t1[ids .== k]
+      t2e = t2[ids .== k]
+      nume = size(t1e)[1]
+      NPBV[k], id[:,k] = retrieveb(NPB,tb,ds,t1e,t2e,nume) 
+    end
+  end 
   # --- Initialize
-  NP = NP0 + NPBV
+  NP = NP0 + sum(NPBV)
   d = zeros(num); H = zeros(num,NP); a0 = zeros(NP); a = zeros(NP)
   dc = zeros(num); dr = zeros(num); delta = 1.e6; rms = 1.e6
   sigma2 = 0.0; Hinv = zeros(num,NP)
@@ -132,13 +149,22 @@ function static_individual(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr
       # --- Fill matrix
       H[n,kx] = (tcx-tc)/dx*vert; H[n,ky]=(tcy-tc)/dy*vert; H[n,kz]=(tcz-tc)/dz*vert
       if it == 1
+        if spc == false
+          ll = 1
+        else
+          ll = ids[n]
+        end
         for m in 1:NPB
-          if id[m] >= 1
+          if id[m,ll] >= 1
             b0 = zeros(NPB)
             b0[m] = 1.0
-            H[n,NP0+id[m]] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b0,NPB)
+            if ll == 1
+              H[n,NP0+id[m,ll]] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b0,NPB)
+            else
+              H[n,NP0+sum(NPBV[1:ll-1])+id[m,ll]] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b0,NPB)
+            end
           end
-        end
+        end 
       end
     end
     Hinv = inv(transpose(H)*H)
@@ -168,17 +194,27 @@ function static_individual(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr
   cv = sqrt.(sigma2*abs.(diag(Hinv))) # Error
   a = transpose(a0[1:NP0])
   # --- Fill NTD basis
-  b = zeros(NPB)
-  for m in 1:NPB
-    if id[m] >= 1
-      b[m] = a0[NP0+id[m]]
-    else
-      b[m] = 0.0
+  b = zeros(NPB,NPA)
+  for k in 1:NPA
+    for m in 1:NPB
+      if id[m,k] >= 1
+        if k ==1
+          b[m,k] = a0[NP0+id[m,k]]
+        elseif k >=2
+          b[m,k] = a0[NP0+sum(NPBV[1:k-1])+id[m,k]]
+        end
+      else
+        b[m,k] = 0.0
+      end
     end
   end
   td = zeros(num)
   for n in 1:num
-    td[n] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b,NPB)
+    if spc == false
+      td[n] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b[:,1],NPB)
+    else
+      td[n] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b[:,ids[n]],NPB)
+    end
   end
 
 # --- Output --- #
@@ -197,7 +233,7 @@ function static_individual(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr
     end
   end
   open(fno3,"w") do out
-    Base.print_array(out,hcat((t1+t2)/2.0,nk,d,dc,dr))
+    Base.print_array(out,hcat((t1+t2)/2.0,nk,d,dc,dr,ids))
   end
   open(fno4,"w") do out
     Base.print_array(out,hcat(collect(1:NPB),id,tb,b))

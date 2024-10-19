@@ -29,7 +29,7 @@ Perform static array positioning with a fixed number of temporal B-spline bases.
     static_array(36.2,0.8,41)
 """
 ######
-function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual.out"::String,fno4="bspline.out"::String,fno5="AICBIC.out"::String)
+function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual.out"::String,fno4="bspline.out"::String,fno5="AICBIC.out"::String,spc=false)
   println(stderr," === GNSS-A positioning: static_array  ===")
   # --- Input check
   nds0 = size(TR_DEPTH)[1]
@@ -45,13 +45,14 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
   # --- Set parameters
   println(stderr," --- Set parameters")
   NP0 = 3; NC = 18 # Number of fixed parameters
+  ntr = size(TR_DEPTH)[1] # Add
   dx = delta_pos; dy = delta_pos; dz = delta_pos
   println(out0,"Convergence_eps: $eps")
   println(out0,"Number_of_B-spline_knots: $NPB")
   println(out0,"Default_latitude: $lat")
   println(out0,"Maximum_iterations: $ITMAX")
   println(out0,"Delta_position: $delta_pos")
-######
+  println(out0,"Platform_correction: $spc") 
   for n in 1:nds0
     println(out0,"TR_DEPTH-$n: $TR_DEPTH[$n]")
   end
@@ -61,16 +62,12 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
   e = read_ant(fn1)
   numk, px, py, pz = read_pxppos(fn2)
   z, v, nz_st, numz = read_prof(fn3,TR_DEPTH0)
-########
   num, nk, tp, t1, x1, y1, z1, h1, p1, r1, t2, x2, y2, z2, h2, p2, r2, nf, ids = read_obsdata(fn4)
-########
   if z[end] < maximum(abs.(pz))                                                 
     error(" static_array: maximum water depth of $fn3 must be deeper than site depth of $fn2")
   end
-########
   nds = size(e)[2]
   println(out0,"Number_of_sea-surface-platforms: $nds")
-########
 
 # --- Formatting --- #
   println(stderr," --- Initial formatting")
@@ -79,12 +76,10 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
   xd1 = zeros(num); xd2 = zeros(num)
   yd1 = zeros(num); yd2 = zeros(num)
   zd1 = zeros(num); zd2 = zeros(num)
-########
   for i in 1:num
     xd1[i], yd1[i], zd1[i] = anttena2tr(x1[i],y1[i],z1[i],h1[i],p1[i],r1[i],e[:,ids[i]])
     xd2[i], yd2[i], zd2[i] = anttena2tr(x2[i],y2[i],z2[i],h2[i],p2[i],r2[i],e[:,ids[i]])
   end
-########
   # --- Set mean tr_height & TT corection
   println(stderr," --- TT corection")
   println(out0,"Travel-time correction: $NC")
@@ -99,9 +94,24 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
   # --- Set B-spline function
   println(stderr," --- NTD basis")
   smin, smax, ds, tb = mktbasis(NPB,t1,t2,num)
-  NPBV, id = retrieveb(NPB,tb,ds,t1,t2,num) 
+  NPA = 1
+  if spc == false
+    NPBV = zeros(Int64,1)
+    id = zeros(Int64,NPB,1)
+    NPBV[1], id[:,1] = retrieveb(NPB,tb,ds,t1,t2,num) 
+  else
+    NPBV = zeros(Int64,ntr)
+    id = zeros(Int64,NPB,ntr)
+    NPA = ntr
+    for k in 1:ntr
+      t1e = t1[ids .== k]
+      t2e = t2[ids .== k]
+      nume = size(t1e)[1]
+      NPBV[k], id[:,k] = retrieveb(NPB,tb,ds,t1e,t2e,nume) 
+    end
+  end
   # --- Initialize
-  NP = NP0 + NPBV
+  NP = NP0 + sum(NPBV) # Add
   d = zeros(num); H = zeros(num,NP); a0 = zeros(NP); a = zeros(NP)
   dc = zeros(num); dr = zeros(num); delta = 1.e6; rms = 1.e6
   sigma2 = 0.0; aic = 0.0; bic = 0.0; Hinv = zeros(NP,NP)
@@ -138,11 +148,20 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
       # --- Fill matrix
       H[n,1] = (tcx-tc)/dx*vert; H[n,2]=(tcy-tc)/dy*vert; H[n,3]=(tcz-tc)/dz*vert
       if it == 1
+        if spc == false
+          ll = 1
+        else
+          ll = ids[n]
+        end
         for m in 1:NPB
-          if id[m] >= 1
+          if id[m,ll] >= 1
             b0 = zeros(NPB)
             b0[m] = 1.0
-            H[n,NP0+id[m]] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b0,NPB)
+            if ll == 1
+              H[n,NP0+id[m,ll]] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b0,NPB)
+            else
+              H[n,NP0+sum(NPBV[1:ll-1])+id[m,ll]] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b0,NPB)
+            end
           end
         end
       end
@@ -170,17 +189,27 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
   tc = (t1[1] + t2[num]) / 2.0
   a = transpose(a0[1:3])
   # --- Fill NTD basis
-  b = zeros(NPB)
-  for m in 1:NPB
-    if id[m] >= 1
-      b[m] = a0[NP0+id[m]]
-    else
-      b[m] = 0.0
+  b = zeros(NPB,NPA)
+  for k in 1:NPA
+    for m in 1:NPB
+      if id[m,k] >= 1
+        if k ==1
+          b[m,k] = a0[NP0+id[m,k]]
+        elseif k >=2
+          b[m,k] = a0[NP0+sum(NPBV[1:k-1])+id[m,k]]
+        end
+      else
+        b[m,k] = 0.0
+      end
     end
   end
   td = zeros(num)
   for n in 1:num
-    td[n] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b,NPB)
+    if spc == false
+      td[n] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b[:,1],NPB)
+    else
+      td[n] = tbspline3((t1[n]+t2[n])/2.0,ds,tb,b[:,ids[n]],NPB)
+    end
   end
 
 # --- Output --- #
@@ -193,7 +222,7 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
     println(out,"")
   end
   open(fno3,"w") do out
-    Base.print_array(out,hcat((t1+t2)/2.0,nk,d,dc,dr))
+    Base.print_array(out,hcat((t1+t2)/2.0,nk,d,dc,dr,ids))
     println(out,"")
   end
   open(fno4,"w") do out
@@ -203,7 +232,6 @@ function static_array(lat,TR_DEPTH::Vector{Float64},NPB=100::Int64; fn1="tr-ant.
   open(fno5,"w") do out
     println(out,"$NPB $aic $bic")
   end
-
 # --- Close process --- #
   time2 = now()
   println(stderr," Start time:",time1)

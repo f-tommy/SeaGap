@@ -33,7 +33,7 @@ Norm of S-NTD is constrained and is controlled by hyper-paramter (alpha).
 # Example
     static_array_s(36.2,[0.8],-0.5,5,100)
 """
-function static_array_s(lat,TR_DEPTH::Vector{Float64},alpha=0.0,NPB1=5,NPB2=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual_sdls.out"::String,fno4="S-NTD.out"::String,fno5="ABIC.out"::String,fno6="gradient.out"::String)
+function static_array_s(lat,TR_DEPTH::Vector{Float64},alpha=0.0,NPB1=5,NPB2=100::Int64; fn1="tr-ant.inp"::String,fn2="pxp-ini.inp"::String,fn3="ss_prof.inp"::String,fn4="obsdata.inp"::String,eps=1.e-4,ITMAX=50::Int64, delta_pos=1.e-4, fno0="log.txt"::String,fno1="solve.out"::String,fno2="position.out"::String,fno3="residual_sdls.out"::String,fno4="S-NTD.out"::String,fno5="ABIC.out"::String,fno6="gradient.out"::String,spc=false)
   println(stderr," === GNSS-A positioning: static_array_s  ===")
   # --- Input check
   nds0 = size(TR_DEPTH)[1]
@@ -53,6 +53,7 @@ function static_array_s(lat,TR_DEPTH::Vector{Float64},alpha=0.0,NPB1=5,NPB2=100:
   println(stderr," --- Set parameters")
   NP0 = 5; NC = 18 # Number of fixed parameters
   dx = delta_pos; dy = delta_pos; dz = delta_pos
+  ntr = size(TR_DEPTH)[1] # Add
   println(out0,"Convergence_eps: $eps")
   println(out0,"Hyper-parameter_for_S-NTD: 10^ $alpha")
   println(out0,"Number_of_B-spline_knots1: $NPB1")
@@ -60,6 +61,7 @@ function static_array_s(lat,TR_DEPTH::Vector{Float64},alpha=0.0,NPB1=5,NPB2=100:
   println(out0,"Default_latitude: $lat")
   println(out0,"Maximum_iterations: $ITMAX")
   println(out0,"Delta_position: $delta_pos")
+  println(out0,"Platform_correction: $spc")
   println(out0,"TR_DEPTH: $TR_DEPTH")
   for n in 1:nds0
     println(out0,"TR_DEPTH-$n: $TR_DEPTH[$n]")
@@ -105,8 +107,24 @@ function static_array_s(lat,TR_DEPTH::Vector{Float64},alpha=0.0,NPB1=5,NPB2=100:
   NPBV1, id1 = retrieveb(NPB1,tb1,ds1,t1,t2,num) 
   smin2, smax2, ds2, tb2 = mktbasis(NPB2,t1,t2,num)
   NPBV2, id2 = retrieveb(NPB2,tb2,ds2,t1,t2,num) 
+  NPA = 1
+  if spc == false
+    NPBV2 = zeros(Int64,1)
+    id2 = zeros(Int64,NPB2,1)
+    NPBV2[1], id2[:,1] = retrieveb(NPB2,tb2,ds2,t1,t2,num) 
+  else
+    NPBV2 = zeros(Int64,ntr)
+    id2 = zeros(Int64,NPB2,ntr)
+    NPA = ntr
+    for k in 1:ntr
+      t1e = t1[ids .== k]
+      t2e = t2[ids .== k]
+      nume = size(t1e)[1]
+      NPBV2[k], id2[:,k] = retrieveb(NPB2,tb2,ds2,t1e,t2e,nume) 
+    end
+  end
   # --- Initialize
-  NP = NP0 + NPBV1 + NPBV2
+  NP = NP0 + NPBV1 + sum(NPBV2) + NPA
   d = zeros(num); H = zeros(num,NP); a0 = zeros(NP); a = zeros(NP)
   dc = zeros(num); dr = zeros(num); delta = 1.e6; rms = 1.e6
   G0 = zeros(NP,NP)
@@ -158,11 +176,20 @@ function static_array_s(lat,TR_DEPTH::Vector{Float64},alpha=0.0,NPB1=5,NPB2=100:
             H[n,NP0+id1[m]] = tbspline3((t1[n]+t2[n])/2.0,ds1,tb1,b0,NPB1)
           end
         end
+        if spc == false
+          ll = 1
+        else
+          ll = ids[n]
+        end
         for m in 1:NPB2
-          if id2[m] >= 1
+          if id2[m,ll] >= 1
             b0 = zeros(NPB2)
             b0[m] = 1.0
-            H[n,NP0+NPBV1+id2[m]] = tbspline3((t1[n]+t2[n])/2.0,ds2,tb2,b0,NPB2)
+            if ll == 1
+              H[n,NP0+NPBV1+id2[m,ll]] = tbspline3((t1[n]+t2[n])/2.0,ds2,tb2,b0,NPB2)
+            else
+              H[n,NP0+NPBV1+sum(NPBV2[1:ll-1])+id2[m,ll]] = tbspline3((t1[n]+t2[n])/2.0,ds2,tb2,b0,NPB2)
+            end
           end
         end
       end
@@ -180,7 +207,7 @@ function static_array_s(lat,TR_DEPTH::Vector{Float64},alpha=0.0,NPB1=5,NPB2=100:
     rms = std(dr)
     sa = LinearAlgebra.dot(dr,dr)
     sigma2 = sa / (num-NP)
-    abic = num*log(sa) - NPBV2*log(10.0^alpha) + logdet(Horg)
+    abic = num*log(sa) - sum(NPBV2)*log(10.0^alpha) + logdet(Horg)
     delta = std(a[1:3])
     a0[1:3] += a[1:3]
     a0[4:NP] = a[4:NP]
@@ -203,18 +230,28 @@ function static_array_s(lat,TR_DEPTH::Vector{Float64},alpha=0.0,NPB1=5,NPB2=100:
       b1[m] = 0.0
     end
   end
-  b2 = zeros(NPB2)
-  for m in 1:NPB2
-    if id2[m] >= 1
-      b2[m] = a0[NP0+NPBV1+id2[m]]
-    else
-      b2[m] = 0.0
+  b2 = zeros(NPB2,NPA)
+  for k in 1:NPA
+    for m in 1:NPB2
+      if id2[m,k] >= 1
+        if k == 1
+          b2[m,k] = a0[NP0+NPBV1+id2[m,k]]
+        elseif k >= 2
+          b2[m,k] = a0[NP0+NPBV1+sum(NPBV2[1:k-1])+id2[m,k]]
+        end
+      else
+        b2[m,k] = 0.0
+      end
     end
   end
   td = zeros(num)
   for n in 1:num
     td[n] = tbspline3((t1[n]+t2[n])/2.0,ds1,tb1,b1,NPB1)
-    td[n] += tbspline3((t1[n]+t2[n])/2.0,ds2,tb2,b2,NPB2)
+    if spc == false
+      td[n] += tbspline3((t1[n]+t2[n])/2.0,ds2,tb2,b2[:,1],NPB2)
+    else
+      td[n] += tbspline3((t1[n]+t2[n])/2.0,ds2,tb2,b2[:,ids[n]],NPB2)
+    end
   end
 
 # --- Output --- #
